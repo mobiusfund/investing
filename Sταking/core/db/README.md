@@ -1,0 +1,1 @@
+- Automatically updated daily market database

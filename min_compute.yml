@@ -1,0 +1,43 @@
+# Use this document to specify the minimum compute requirements.
+# This document will be used to generate a list of recommended hardware for your subnet.
+
+# This is intended to give a rough estimate of the minimum requirements
+# so that the user can make an informed decision about whether or not
+# they want to run a miner or validator on their machine.
+
+# NOTE: Specification for miners may be different from validators
+
+version: '1.0' # update this version key as needed, ideally should match your release version
+
+compute_spec:
+
+  miner:
+
+    gpu:
+      required: False                      # Does the application require a GPU?
+
+    storage:
+      min_space: 20           # Minimum free storage space (GB)
+      recommended_space: 100  # Recommended free storage space (GB)
+
+    os:
+      name: "Ubuntu"  # Name of the preferred operating system(s)
+      version: 22.04  # Version of the preferred operating system(s)
+
+  validator:
+
+    gpu:
+      required: False                      # Does the application require a GPU?
+
+    storage:
+      min_space: 20           # Minimum free storage space (GB)
+      recommended_space: 100  # Recommended free storage space (GB)
+
+    os:
+      name: "Ubuntu"  # Name of the preferred operating system(s)
+      version: 22.04  # Version of the preferred operating system(s)
+
+network_spec:
+  bandwidth:
+    download: 1000  # Minimum download bandwidth (Mbps)
+    upload: 1000    # Minimum upload bandwidth (Mbps)
