@@ -36,7 +36,7 @@ import json, requests
 import numpy as np
 import pandas as pd
 import sqlalchemy as sql
-from const import *
+from .const import *
 
 kk = ['uid', 'hotkey']
 kb = [*kk, 'block']
@@ -67,24 +67,22 @@ def ddclean(dd):
 def fetchdb(self):
     st = self.st
     if not len(st): return pd.DataFrame()
-    db = f'{cd}/db/daily.db'
-    if not os.path.exists(db):
-        try: r = requests.get(f'{API_ROOT}/daily/db')
-        except: print('simst: error: DB init', file=sys.stderr), exit(1)
-        with open(db, 'wb') as file: file.write(r.content)
     date = st['date'].min()
+    db = f'{cd}/db/daily.db'
     conn = sql.create_engine(f'sqlite:///{db}').connect()
-    bn = pd.read_sql('SELECT * FROM bndaily', conn)[1:]
-    last = bn['date'].iat[-1] if len(bn) else FIRST_DATE
+    if not os.path.getsize(db):
+        pd.read_csv(f'{db[:-3]}.00').to_sql('bndaily', conn, index=False)
+    bn = pd.read_sql('SELECT * FROM bndaily', conn)
+    last = bn['date'].iat[-1] if len(bn) > 1 else FIRST_DATE
     if last >= time.strftime('%F', time.gmtime(time.time() - 86400)):
         return bn[bn['date'] >= date]
     print(f'Fetch DB, begin {last}...', end='', flush=True)
     try: r, e = json.loads(requests.get(f'{API_ROOT}/daily/{last}').json()), 'done'
     except: r, e = [], 'error'
     df = pd.DataFrame(r, None, bn.columns).astype(bn.dtypes)
-    if len(bn): df = df[df['date'] > last]
+    if len(bn) > 1: df = df[df['date'] > last]
     bn = pd.concat([bn, df])
-    print(f" {e}, end {bn['date'].iat[-1] if len(bn) else last}.")
+    print(f" {e}, end {bn['date'].iat[-1] if len(bn) > 1 else last}.")
     df.to_sql('bndaily', conn, if_exists='append', index=False)
     conn.commit()
     return bn[bn['date'] >= date]
@@ -257,7 +255,7 @@ def score(dd):
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apy = ((1 + daily / 100) ** 365 - 1) * 100
     mar = gain / (risk or 1)
-    lsr = gain / (dd['pnl'].abs().sum() or 1e18)
+    lsr = dd['pnl'].sum() / (dd['pnl'].abs().sum() or 1e18)
     odds = 50 + kelly(prob, pavg / lavg) / 2 * 100
     if odds <= 0: odds = 0
     if np.isnan(odds): odds = prob * 100
@@ -288,7 +286,7 @@ def args():
         add_help = False,
     )
     parser.add_argument('csv', metavar='strategies_csv')
-    parser.add_argument('-f', '--fund', default=0)
+    parser.add_argument('-f', '--fund', default=0, type=float)
     parser.add_argument('-e', '--end', default='')
     parser.add_argument('-h', '--help', action='store_true')
 

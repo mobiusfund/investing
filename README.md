@@ -132,7 +132,7 @@ At the subnet launch, a strategy's ranking is based on a single score calculated
 
 Miners are encouraged to emphasize long-term strategies with portfolio management, in contrast to short-term trading in isolated instruments. The general goal is to consistently outperform the market by boosting alpha while reducing beta. For miners new to portfolio management, the concept of MPT and CAPM can be a good starting point in optimizing strategies and portfolios using machine learning.
 
-The `Sταking/bin/simst` tool (Sim Stake/Strat) can be convenient for testing multiple strategies and tuning performance based on historical market data.
+The stand-alone tool `Sταking/bin/simst` (Sim Stake/Strat) can be convenient for testing multiple strategies and tuning performance based on historical market data.
 
 ## Disclaimer
 Past performance is no guarantee of future results. The subnet does not provide financial advice of any kind. Investing carries inherent risks, including the risk of partial or total loss of capital. The subnet is not responsible for any profit or loss resulting from any strategies shared by the community.

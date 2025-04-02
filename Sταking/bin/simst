@@ -1,4 +1,4 @@
 cd `dirname $(realpath $0)`
-. ../../.venv/bin/activate &>/dev/null
-cd ../core
-python simst.py "$@"
+cd ..
+. ../.venv/bin/activate &>/dev/null
+python -m core.simst "$@"

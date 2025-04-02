@@ -17,10 +17,10 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-import time
-
-# Bittensor
+import os, time, random
 import bittensor as bt
+import Sταking.core.api as api
+import Sταking.core.etc as etc
 
 # import base validator class which takes care of most of the boilerplate
 from template.base.validator import BaseValidatorNeuron
@@ -58,11 +58,31 @@ class Validator(BaseValidatorNeuron):
         # TODO(developer): Rewrite this function based on your protocol definition.
         return await forward(self)
 
+    def score(self, x):
+        while True:
+            if int(time.strftime('%M')) in [25, 55]: break
+            time.sleep(1)
+        time.sleep(random.randint(60, 120))
+        pl = api.pnl()
+        if not len(pl): return
+        bt.logging.info('Calculating score...')
+        self.scores = etc.score(pl, self.metagraph.n)
+
 
 # The main function parses the configuration and runs the validator.
 if __name__ == "__main__":
     bt.logging.enable_info()
     with Validator() as validator:
+        validator.loop.run_until_complete = validator.score
+        validator.concurrent_forward = lambda: ...
+        step = 0
         while True:
-            bt.logging.info(f"Validator running... {time.time()}")
-            time.sleep(5)
+            if step % 60 == 0: bt.logging.info(f"Validator running... {time.time()}")
+            if step % 3600 == 0:
+                try: err = etc.update()
+                except: err = None
+                if err == 0:
+                    print('Restarting...')
+                    exit() # restart w/ pm2
+            time.sleep(1)
+            step += 1

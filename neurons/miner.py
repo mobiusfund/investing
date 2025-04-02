@@ -19,6 +19,8 @@
 import time
 import typing
 import bittensor as bt
+import Sταking.core.api as api
+import Sταking.core.etc as etc
 
 # Bittensor Miner Template:
 import template
@@ -168,6 +170,16 @@ class Miner(BaseMinerNeuron):
 if __name__ == "__main__":
     bt.logging.enable_info()
     with Miner() as miner:
+        ss58 = miner.wallet.hotkey.ss58_address
+        step = 0
         while True:
-            bt.logging.info(f"Miner running... {time.time()}")
-            time.sleep(5)
+            if etc.isnew(ss58): api.rev(ss58)
+            if step % 10 == 0: bt.logging.info(f"Miner running... {time.time()}")
+            if step % 3600 == 0:
+                try: err = etc.update()
+                except: err = None
+                if err == 0:
+                    print('Restarting...')
+                    exit() # restart w/ pm2
+            time.sleep(1)
+            step += 1
