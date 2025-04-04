@@ -2,7 +2,7 @@
 
 # **Sταking**
 ## Optimizing Staking Strategies
-[Dashboard](https://stakingalpha.com) • [Discord](https://discord.gg/bittensor)
+[Dashboard](https://stakingalpha.com) • [Discord](https://discord.gg/bittensor) • [X](https://x.com/StakingAlpha88)
 </div>
 
 ---
@@ -69,7 +69,7 @@ A strategy can be revised or "rebalanced" whenever necessary. It will be automat
 
 One machine can run multiple miners with their corresponding strategies. However a new or revised strategy that is overly similar to an existing one will be rejected.
 
-A new miner has an immunity period of 3 days. Validators start setting weights after 2 days.
+A newly registered miner has an immunity period of 3 days.
 
 #### Testnet
 
@@ -132,7 +132,7 @@ At the subnet launch, a strategy's ranking is based on a single score calculated
 
 Miners are encouraged to emphasize long-term strategies with portfolio management, in contrast to short-term trading in isolated instruments. The general goal is to consistently outperform the market by boosting alpha while reducing beta. For miners new to portfolio management, the concept of MPT and CAPM can be a good starting point in optimizing strategies and portfolios using machine learning.
 
-The stand-alone tool `Sταking/bin/simst` (Sim Stake/Strat) can be convenient for testing multiple strategies and tuning performance based on historical market data.
+The stand-alone tool `Sταking/bin/simst` (Sim Stake/Strat) can be convenient for back testing strategies and tuning performance based on historical market data.
 
 ## Disclaimer
 Past performance is no guarantee of future results. The subnet does not provide financial advice of any kind. Investing carries inherent risks, including the risk of partial or total loss of capital. The subnet is not responsible for any profit or loss resulting from any strategies shared by the community.

@@ -1,4 +1,5 @@
+cwd=`pwd`
 cd `dirname $(realpath $0)`
 cd ..
 . ../.venv/bin/activate &>/dev/null
-python -m core.simst "$@"
+python -m core.simst "$@" /$cwd/

@@ -17,13 +17,14 @@ Examples:
         simst /tmp/test.csv -f 5000 -e 2025-06-30
 
 Notes: The strategies csv file has 5 columns: uid, date, block, fund, strat.
-A strategy is uniquely identified by the 'uid' column. The 'block' column is
-only effective for live mining and currently ignored for general usage. For
-a given strategy, the 'fund' column is only effective once and ignored by
-subsequent rebalancing. Rebalancing can only happen once for a given date,
-at the first block after midnight UTC. Multiple allocations on the same date
-are ignored. The lack of block-level precision is because block-by-block
-market data is too resource demanding to be publically available.
+Other columns are allowed but ignored. A strategy is uniquely identified by
+the 'uid' column. The 'block' column is only effective for live mining and
+currently ignored for general usage. For a given strategy, the 'fund' column
+is only effective once and ignored by subsequent rebalancing. Rebalancing
+can only happen once on a given date, at the first block after midnight UTC.
+Multiple allocations on the same date are ignored. The lack of block-level
+precision is because block-by-block market data is too resource demanding
+to be generally available.
 
 This tool is a part of Sταking, the Bittensor subnet that optimizes staking
 strategies. Please visit:
@@ -76,7 +77,7 @@ def fetchdb(self):
     last = bn['date'].iat[-1] if len(bn) > 1 else FIRST_DATE
     if last >= time.strftime('%F', time.gmtime(time.time() - 86400)):
         return bn[bn['date'] >= date]
-    print(f'Fetch DB, begin {last}...', end='', flush=True)
+    print(f'Fetching DB, begin {last}...', end='', flush=True)
     try: r, e = json.loads(requests.get(f'{API_ROOT}/daily/{last}').json()), 'done'
     except: r, e = [], 'error'
     df = pd.DataFrame(r, None, bn.columns).astype(bn.dtypes)
@@ -92,7 +93,7 @@ def initfund(self):
     if not len(bn): return pd.DataFrame()
     notin = 'init' not in st
     fi = pd.DataFrame(columns=[*kk, 'date', 'block', 'init', 'fund', 'strat'])
-    for _, dd in st.iterrows():
+    for _, dd in st.sort_values(['date', 'block']).iterrows():
         date = max(bn['date'].iat[0], dd['date'])
         block = bn[bn['date'] >= date]['block'].iat[0] if notin else dd['block']
         init = int(dd['uid'] not in fi['uid'].values) if notin else dd['init']
@@ -276,6 +277,8 @@ def score(dd):
     ]
 
 def args():
+    cwd = ''
+    if (sys.argv[-1][:2] + sys.argv[-1][-1:]) == '///': cwd = sys.argv.pop()[1:]
     if len(sys.argv) == 2 and sys.argv[1] in ['-h', '--help']: print(info), exit()
     if len(sys.argv) == 1: print('simst - Sim Stake/Strat\n')
 
@@ -292,18 +295,22 @@ def args():
 
     try: a = parser.parse_args()
     except: print("Try 'simst -h' for more info", file=sys.stderr), exit(1)
-    if not os.path.isfile(a.csv) or not os.access(a.csv, os.R_OK):
+    csv = (cwd if a.csv[:1] != '/' else '') + a.csv
+    if not os.path.isfile(csv) or not os.access(csv, os.R_OK):
         print(f"simst: error: file '{a.csv}' does not exist or is not readable", file=sys.stderr)
         exit(1)
-    return a.csv, a.fund, a.end
+    return csv, a.fund, a.end
 
 def main():
     csv, fund, end = args()
     sim = SimSt(pd.read_csv(csv))
     if fund: sim.fi['fund'] = fund
     if end: sim.bn = sim.bn[sim.bn['date'] <= end]
-    for date in sorted(sim.bn['date'].unique()):
+    dates = sorted(sim.bn['date'].unique())
+    for date in dates:
+        print(date, end='', flush=True)
         sim.pldaily(date)
+        print(', ' if date < dates[-1] else '.\n', end='', flush=True)
     sim.pl2sc()
     if not len(sim.sc): return
     print(sim.sc2pct().to_string(index=False))

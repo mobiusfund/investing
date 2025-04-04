@@ -59,10 +59,11 @@ class Validator(BaseValidatorNeuron):
         return await forward(self)
 
     def score(self, x):
+        time.sleep(60)
         while True:
             if int(time.strftime('%M')) in [25, 55]: break
             time.sleep(1)
-        time.sleep(random.randint(60, 120))
+        time.sleep(random.randint(25, 55))
         pl = api.pnl()
         if not len(pl): return
         bt.logging.info('Calculating score...')
