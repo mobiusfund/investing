@@ -169,7 +169,7 @@ def pldaily(self, date):
             if rev:
                 try: init, fund, alloc = fa.loc[gg].set_index('netuid').loc[netuid]
                 except: init, fund, alloc = 0, 0, 0
-                if not init and fund and alloc: self.stupdate(key, value)
+                if not init and fund and alloc: self.stupdate(gg, value)
                 diff = (init * fund or value) * alloc - di['value']
                 di['alpha'] += di['alpha_in'] - di['tao_in'] * di['alpha_in'] / (di['tao_in'] + diff) if netuid else diff
                 if di['alpha'] < 0 or di['alpha'] >= di['alpha_in']: di['alpha'] = 0
@@ -316,7 +316,7 @@ def main():
     print(sim.sc2pct().to_string(index=False))
 
 # reserved for live api server
-def stupdate(self, k, v): pass
+def stupdate(self, g, v): pass
 def dnappend(self, dh, date): pass
 def hlappend(self, hl): pass
 def plappend(self, pl): pass

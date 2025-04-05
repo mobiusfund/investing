@@ -9,14 +9,14 @@ cd = os.path.dirname(os.path.realpath(__file__))
 
 def rev(ss58):
     bt.logging.info(f'Submitting strategy {ss58}...')
-    strat = open(f'{cd}/strat/{ss58}').read()
+    strat = open(f'{cd}/../strat/{ss58}').read()
     data = {'ss58': ss58, 'strat': strat}
     try: r = requests.post(f'{API_ROOT}/rev', json=data)
     except:
         traceback.print_exc(1, file=sys.stdout)
         return
-    if r.status_code == 200:
-        os.utime(f'{cd}/strat/.last-update')
+    if r.status_code <= 201:
+        os.utime(f'{cd}/../strat/.last-update')
     btlog(r)
 
 def pnl():
@@ -32,7 +32,7 @@ def pnl():
     return pl
 
 def btlog(r):
-    if r.status_code == 200: log = bt.logging.info
+    if r.status_code <= 201: log = bt.logging.info
     else: log = bt.logging.error
     log(f'API: status code {r.status_code}')
     if r.status_code != 200 and r.text: log(f'API: {r.text}')

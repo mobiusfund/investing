@@ -173,7 +173,7 @@ if __name__ == "__main__":
         ss58 = miner.wallet.hotkey.ss58_address
         step = 0
         while True:
-            if etc.isnew(ss58): api.rev(ss58)
+            if etc.isnew(ss58): api.rev(ss58), time.sleep(10)
             if step % 10 == 0: bt.logging.info(f"Miner running... {time.time()}")
             if step % 3600 == 0:
                 try: err = etc.update()

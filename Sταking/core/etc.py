@@ -18,8 +18,8 @@ def update():
     return err
 
 def isnew(ss58):
-    root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    last, strat = f'{root}/strat/.last-update', f'{root}/strat/{ss58}'
+    cd = os.path.dirname(os.path.realpath(__file__))
+    last, strat = f'{cd}/../strat/.last-update', f'{cd}/../strat/{ss58}'
     for f in strat, last: ... if os.path.exists(f) else open(f, 'a').close()
     return os.path.getsize(strat) and os.path.getmtime(strat) > os.path.getmtime(last)
 
