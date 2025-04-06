@@ -1,3 +1,5 @@
+# Copyright © 2025 Mobius Fund
+
 import os, requests
 from .const import RAWGIT_ROOT
 from .simst import SimSt

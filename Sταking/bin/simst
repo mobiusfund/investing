@@ -2,4 +2,7 @@ cwd=`pwd`
 cd `dirname $(realpath $0)`
 cd ..
 . ../.venv/bin/activate &>/dev/null
-python -m core.simst "$@" /$cwd/
+python=python
+test `which python3` && python=python3
+test `which python` && python=python
+$python -m core.simst "$@" /$cwd/

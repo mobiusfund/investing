@@ -67,7 +67,7 @@ When a strategy is filed under the `Sταking/strat/` directory, it will be auto
 
 A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in subnet allocation will incur slippage costs.
 
-One machine can run multiple miners with their corresponding strategies. However a new or revised strategy that is overly similar to an existing one will receive a score of zero.
+One machine can run multiple miners with their corresponding strategies. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
 A newly registered miner has an immunity period of 3 days.
 
@@ -114,6 +114,8 @@ A simple number $$score$$ is used to evaluate strategies, where:
 & odds\% = 50 + \frac {\ kelly\ } {\ 2\ } \cdot 100 \\
 \\
 & daily\% = \left( 1 + \frac {\ yield\%\ } {\ 100\ } \right) ^ {\frac {\ 1\ } {\ days\ }} \cdot 100 - 100 \\
+\\
+& apy\% = \left( 1 + \frac {\ daily\%\ } {\ 100\ } \right) ^ {365} \cdot 100 - 100 \\
 \\
 & score = mar \cdot lsr \cdot odds\% \cdot daily\% \\
 \\

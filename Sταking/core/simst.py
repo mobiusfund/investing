@@ -1,6 +1,6 @@
 info = '''
 simst - Sim Stake/Strat, version 0.0.1
-Copyright (c) 2025 Mobius Fund
+Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
 
@@ -93,12 +93,12 @@ def initfund(self):
     if not len(bn): return pd.DataFrame()
     notin = 'init' not in st
     fi = pd.DataFrame(columns=[*kk, 'date', 'block', 'init', 'fund', 'strat'])
-    for _, dd in st.sort_values(['date', 'block']).iterrows():
-        date = max(bn['date'].iat[0], dd['date'])
-        block = bn[bn['date'] >= date]['block'].iat[0] if notin else dd['block']
-        init = int(dd['uid'] not in fi['uid'].values) if notin else dd['init']
-        hk = '' if 'hotkey' not in st else dd['hotkey']
-        fi.loc[len(fi)] = [dd['uid'], hk, date, block, init, *dd[['fund', 'strat']]]
+    for _, di in st.sort_values(['date', 'block']).iterrows():
+        date = max(bn['date'].iat[0], di['date'])
+        block = bn[bn['date'] >= date]['block'].iat[0] if notin else di['block']
+        init = int(di['uid'] not in fi['uid'].values) if notin else di['init']
+        hk = '' if 'hotkey' not in st else di['hotkey']
+        fi.loc[len(fi)] = di['uid'], hk, date, block, init, *di[['fund', 'strat']]
     fi['strat'] = fi['strat'].str.replace(r'''[^{'\w":.,}]''', '', regex=True)
     self.rv = bn[bn['block'].isin(fi['block'].values)].copy()
     self.rv['ochl'] = 'rv'
@@ -108,13 +108,13 @@ def pldaily(self, date):
     bn, rv, fi, ba = self.bn, self.rv, self.fi, self.ba
     dn = bn[bn['date'] == date]
     fa = pd.DataFrame(columns=[*kk, 'block', 'netuid', 'init', 'fund', 'alloc'])
-    for _, dd in fi[fi['date'] == date].iterrows():
-        try: strat = eval(dd['strat'])
+    for _, di in fi[fi['date'] == date].iterrows():
+        try: strat = eval(di['strat'])
         except: continue
         if sum(strat.values()) > 1: continue
         strat ={j:strat[j] for j in strat if j and j in dn['netuid'].values}
         strat[0] = 1 - sum(strat.values())
-        for n in strat: fa.loc[len(fa)] = [*dd[kb], n, *dd[['init', 'fund']], strat[n]]
+        for n in strat: fa.loc[len(fa)] = *di[kb], n, *di[['init', 'fund']], strat[n]
     bb = fa[kb].drop_duplicates().sort_values(kb)
     nn = pd.concat([ba[kn], fa[kn]]).drop_duplicates().sort_values(kn).reset_index()
     dn = pd.concat([dn, rv[rv['date'] == date]])
@@ -191,7 +191,7 @@ def pldaily(self, date):
         loc += [dd[dd['value'] == dd['value'].max()].iloc[-1][col]]
         loc += [dd[dd['value'] == dd['value'].min()].iloc[-1][col]]
         loc += [dd.iloc[-1][col]]
-        hl.loc[len(hl)] = [*gg[:2], date, gg[2]] + [a for z in zip(*loc) for a in z]
+        hl.loc[len(hl)] = *gg[:2], date, gg[2], *[a for z in zip(*loc) for a in z]
 
     pl = self.pl
     for gg, dd in dh.groupby(kk) if len(dh) else []:
@@ -205,7 +205,7 @@ def pldaily(self, date):
         loc += [dd[dd['value'] == dd['value'].max()].iloc[-1,-3:]]
         loc += [dd[dd['value'] == dd['value'].min()].iloc[-1,-3:]]
         loc += [dd.iloc[-1,-3:]]
-        pl.loc[len(pl)] = [*gg, date] + [a for z in zip(*loc) for a in z]
+        pl.loc[len(pl)] = *gg, date, *[a for z in zip(*loc) for a in z]
 
     self.ba = hl[self.ba.columns]
     self.dnappend(dh, date)
@@ -221,7 +221,7 @@ def pl2sc(self):
         dd['pnl%'] = dd['pnl'] / dd['value_close'].shift() * 100
         dd['pnl'].iat[0] = dd['value_close'].iat[0] - init
         dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
-        sc.loc[len(sc)] = [*gg, dd['date'].iat[-1], *score(dd)]
+        sc.loc[len(sc)] = *gg, dd['date'].iat[-1], *score(dd)
     self.sc = sc.sort_values(['score', 'apy%'], ascending=False)
     self.scappend(sc)
 

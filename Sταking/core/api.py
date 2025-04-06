@@ -1,3 +1,5 @@
+# Copyright © 2025 Mobius Fund
+
 import os, sys
 import json, requests
 import traceback
