@@ -32,7 +32,7 @@ cd staking
 python -m venv .venv
 . .venv/bin/activate
 #
-pip install -e .
+python -m pip install -e .
 ```
 
 #### Miner
@@ -45,7 +45,7 @@ pm2 start neurons/miner.py \
     --name staking-miner -- \
     --wallet.name {coldkey} \
     --wallet.hotkey {hotkey} \
-    --netuid 88 #188 --subtensor.network test
+    --netuid 88 #339 --subtensor.network test
 ```
 
 #### Validator
@@ -58,7 +58,7 @@ pm2 start neurons/validator.py \
     --name staking-validator -- \
     --wallet.name {coldkey} \
     --wallet.hotkey {hotkey} \
-    --netuid 88 #188 --subtensor.network test
+    --netuid 88 #339 --subtensor.network test
 ```
 
 ## Mining
