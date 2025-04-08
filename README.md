@@ -67,7 +67,7 @@ When a strategy is filed under the `Sταking/strat/` directory, it will be auto
 
 A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in subnet allocation will incur slippage costs.
 
-All strategy updates will be shown on the dashboard the following day, after midnight UTC daily score calculation takes place.
+All strategy updates will be shown on the dashboard immediately. Daily score calculation will take place after midnight UTC.
 
 One machine can run multiple miners with their corresponding strategies. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
