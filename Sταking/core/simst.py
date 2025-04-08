@@ -57,8 +57,9 @@ class SimSt():
 
 def ddclean(dd):
     dd = dd.drop_duplicates(['block', 'ochl'], keep='last')
+    dd.iloc[:,1:5] = dd.iloc[:,1:5].astype(int)
     dd = dd.sort_values('block').reset_index(drop=True)
-    dd.iloc[:,5:-1] = dd.iloc[:,5:-1].interpolate().bfill().ffill()
+    dd.iloc[:,5:-1] = dd.iloc[:,5:-1].astype(float).interpolate().bfill().ffill()
     dd = dd.drop(dd[dd['ochl'] == 'o'].index[1:])
     dd = dd.drop(dd[dd['ochl'] == 'high'].sort_values('price').index[:-1])
     dd = dd.drop(dd[dd['ochl'] == 'low'].sort_values('price').index[1:])
