@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.1.0
+simst - Sim Stake/Strat, version 0.1.1
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -112,7 +112,9 @@ def pldaily(self, date):
     for _, di in fi[fi['date'] == date].iterrows():
         try: strat = eval(di['strat'])
         except: strat = {}
-        if sum(strat.values()) > 1: strat = {}
+        try:
+            if sum(strat.values()) > 1: strat = {}
+        except: strat = {}
         strat ={j:strat[j] for j in strat if j and j in dn['netuid'].values}
         strat[0] = 1 - sum(strat.values())
         for n in strat: fa.loc[len(fa)] = *di[kb], n, *di[['init', 'fund']], strat[n]
