@@ -71,7 +71,7 @@ All strategy updates will be shown on the dashboard immediately. Daily score cal
 
 One machine can run multiple miners with their corresponding strategies. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
-A newly registered miner has an immunity period of 3 days.
+A newly registered miner goes live on the dashboard after day 1, with an immunity period of 3 days.
 
 #### Testnet
 
@@ -126,7 +126,7 @@ A simple number $$score$$ is used to evaluate strategies, where:
 
 Two parameters here are developed exclusively by Mobius Fund: $$odds\\%$$ is essentially winning odds normalized using Kelly's equation, with the profit/loss ratio normalized to 1 while the Kelly factor remaining the same; $$lsr$$ is >0.99 correlated to Sharpe Ratio and mathematically more sound. Empirically $$lsr \approx \frac {\ sharpe\ ratio\ } {\ 11\ }$$.
 
-There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, $$risk\\% = 0$$, and empirically we define $$mar = \frac { \sqrt { days\ }\ } {\ 5\ }$$.
+There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, $$risk\\% = 0$$, and empirically we define $$mar = \frac { \sqrt { days\ }\ } {\ 5\ } \cdot yield\\%$$.
 
 We assume $$fund = 1000τ$$ as the initial capital and take slippage into account. Profit and loss are calculated daily at midnight UTC. Yield is determined by price performance of allocated subnets, plus estimated dividends from validator delegation with the default 18% take.
 

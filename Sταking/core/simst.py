@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.1.1
+simst - Sim Stake/Strat, version 0.2.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -258,12 +258,11 @@ def score(dd):
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apy = ((1 + daily / 100) ** 365 - 1) * 100
-    mar = gain / (risk or 1)
+    mar = gain / max(risk, 5 / days ** 0.5)
     lsr = dd['pnl'].sum() / (dd['pnl'].abs().sum() or 1e18)
     odds = 50 + kelly(prob, pavg / lavg) / 2 * 100
     if odds <= 0: odds = 0
     if np.isnan(odds): odds = prob * 100
-    if not risk and prob: mar = days ** 0.5 / 5
     score = mar * lsr * odds * daily
     if score <= 0: score = 0
     return [days,

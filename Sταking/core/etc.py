@@ -12,7 +12,7 @@ def update():
     lv, rv = [eval(v.split('\n')[0].split('=')[1]) for v in [lv, rv]]
     ln, rn = [sum(int(n) * 100 ** i for i, n in enumerate(v.split('.')[::-1])) for v in [lv, rv]]
     if ln >= rn: return
-    print(f'Updating... version {lv} -> version {rv}')
+    print(f'Updating... {lv} -> {rv}')
     cmd = f'cd {root}; git pull && pip install -e .'
     err = os.system(cmd)
     if err: print(f'Update failed. Please manually update using command:\n{cmd}')
