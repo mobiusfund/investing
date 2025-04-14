@@ -23,6 +23,8 @@ The business model and innovations will apply across crypto and other more tradi
 
 ## Installation
 
+Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks.
+
 #### Setup
 
 ```bash
