@@ -7,6 +7,7 @@
 
 ---
 - [Intro](#Intro)
+- [Roadmap](#Roadmap)
 - [Installation](#installation)
 - [Mining](#Mining)
 - [Scoring](#Scoring)
@@ -21,9 +22,17 @@ Miners share their strategies, while validators evaluate them using a [scoring a
 
 The business model and innovations will apply across crypto and other more traditional markets, extract alpha from these markets, minimize risks, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.pwc.com/ng/en/press-room/global-assets-under-management-set-to-rise.html) asset management industry.
 
+## Roadmap
+
+Phase I - Live at launch: Subnet staking \
+Phase II - 3 to 6 months: Portfolio management with US stocks \
+Phase III - 6 months to 1 year: Multi-class asset management in global markets \
+Phase IV - 1 year and beyond: Fully realized, DeAI powered AUM \
+In parallel - Ongoing: A frontend AUM app serving real-world investors
+
 ## Installation
 
-Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks.
+Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks, including macOS.
 
 #### Setup
 
@@ -71,7 +80,7 @@ A strategy can be revised or "rebalanced" whenever necessary. It will be automat
 
 All strategy updates will be shown on the dashboard immediately. Daily score calculation will take place after midnight UTC.
 
-One machine can run multiple miners with their corresponding strategies. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
+One machine can run multiple miners with their corresponding strategies, with an extra argument e.g. `--axon.port 8092` added to the `pm2` command. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
 A newly registered miner goes live on the dashboard after day 1, with an immunity period of 3 days.
 
@@ -144,6 +153,8 @@ At the subnet launch, a strategy's ranking is based on a single score calculated
 Miners are encouraged to emphasize long-term strategies with portfolio management, in contrast to short-term trading in isolated instruments. The general goal is to consistently outperform the market by boosting alpha while reducing beta. For miners new to portfolio management, the concept of MPT and CAPM can be a good starting point in optimizing strategies and portfolios using machine learning.
 
 The stand-alone tool `Sταking/bin/simst` (Sim Stake/Strat) can be convenient for back testing strategies and tuning performance based on historical market data.
+
+Note that `simst` lacks block-level precision compared to live mining, as explained in the `--help` printout. The difference in results should be negligible especially in a long-term timeframe.
 
 ## Disclaimer
 Past performance is no guarantee of future results. The subnet does not provide financial advice of any kind. Investing carries inherent risks, including the risk of partial or total loss of capital. The subnet is not responsible for any profit or loss resulting from any strategies shared by the community.
