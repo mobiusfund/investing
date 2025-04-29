@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.2.0
+simst - Sim Stake/Strat, version 0.3.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -175,6 +175,7 @@ def pldaily(self, date):
                 if not init and fund and alloc: self.stupdate(gg, value)
                 diff = (init * fund or value) * alloc - di['value']
                 di['alpha'] += di['alpha_in'] - di['tao_in'] * di['alpha_in'] / (di['tao_in'] + diff) if netuid else diff
+                di['alpha'] -= np.abs(diff) * di['emission'] / di['weight'] if netuid else 0 # staking/unstaking fee
                 if di['alpha'] < 0 or di['alpha'] >= di['alpha_in']: di['alpha'] = 0
                 dd.loc[i,'alpha'] = di['alpha']
                 dd.loc[i,'value'] = di['alpha'] * di['price']
@@ -225,6 +226,7 @@ def pl2sc(self):
         dd['pnl'].iat[0] = dd['value_close'].iat[0] - init
         dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
         sc.loc[len(sc)] = *gg, dd['date'].iat[-1], *score(dd)
+    sc.loc[sc['days'] < 30, 'score'] *= sc['days'] / (sc['days'] + 5)
     self.sc = sc.sort_values(['score', 'apy%'], ascending=False)
     self.scappend(sc)
 

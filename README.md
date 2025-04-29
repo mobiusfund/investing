@@ -76,7 +76,7 @@ pm2 start neurons/validator.py \
 
 When a strategy is filed under the `Sταking/strat/` directory, it will be automatically submitted by the miner. Please see [README](https://github.com/mobiusfund/staking/tree/main/Sταking/strat) for further info.
 
-A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in subnet allocation will incur slippage costs.
+A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in subnet allocation will incur slippage costs as well as staking/unstaking fees.
 
 All strategy updates will be shown on the dashboard immediately. Daily score calculation will take place after midnight UTC.
 
@@ -141,6 +141,13 @@ There are two edge cases when a strategy is getting started: All days are loss d
 ```math
 \begin{aligned}
 & mar = yield\% / max( risk\%,\ \frac {\ 5\ } {\ \sqrt { days\ }\ } )
+\end{aligned}
+```
+
+To further limit short-term effects in Bittensor, we make an empirical adjustment to $$score$$ in live code:
+```math
+\begin{aligned}
+& score = score\ *\ \frac {\ days\ } {\ days + 5\ },\ if\ days < 30
 \end{aligned}
 ```
 
