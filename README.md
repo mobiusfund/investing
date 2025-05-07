@@ -161,7 +161,7 @@ Miners are encouraged to emphasize long-term strategies with portfolio managemen
 
 The stand-alone tool `Sταking/bin/simst` (Sim Stake/Strat) can be convenient for back testing strategies and tuning performance based on historical market data.
 
-Note that `simst` lacks block-level precision compared to live mining, as explained in the `--help` printout. The difference in results should be negligible especially in a long-term timeframe.
+Note that in contrast to live mining, `simst` may simulate block-level precision based on limited market data. The difference in results should not be far off especially in a long-term timeframe.
 
 ## Disclaimer
 Past performance is no guarantee of future results. The subnet does not provide financial advice of any kind. Investing carries inherent risks, including the risk of partial or total loss of capital. The subnet is not responsible for any profit or loss resulting from any strategies shared by the community.

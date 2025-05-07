@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.3.0
+simst - Sim Stake/Strat, version 0.4.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -16,15 +16,14 @@ Examples:
         simst ../strat/simst.csv
         simst /tmp/test.csv -f 5000 -e 2025-06-30
 
-Notes: The strategies csv file has 5 columns: uid, date, block, fund, strat.
-Other columns are allowed but ignored. A strategy is uniquely identified by
-the 'uid' column. The 'block' column is only effective for live mining and
-currently ignored for general usage. For a given strategy, the 'fund' column
-is only effective once and ignored by subsequent rebalancing. Rebalancing
-can only happen once on a given date, at the first block after midnight UTC.
-Multiple allocations on the same date are ignored. The lack of block-level
-precision is because block-by-block market data is too resource demanding
-to be generally available.
+Notes: The strategies csv file has 6 effective columns: uid, date, block,
+init, fund, strat. Other columns are allowed but ignored. A strategy is
+uniquely identified by the 'uid' column. The 'init' and 'fund' columns are
+only effective once and ignored by subsequent rebalancing.
+
+Block-level precision may be simulated using Pandas 'interpolate()', if a
+given block is not found in available market data. By default, simst comes
+with an auto updated market database with hourly precision.
 
 This tool is a part of Sταking, the Bittensor subnet that optimizes staking
 strategies. Please visit:
@@ -102,6 +101,13 @@ def initfund(self):
         fi.loc[len(fi)] = di['uid'], hk, date, block, init, *di[['fund', 'strat']]
     fi['strat'] = fi['strat'].str.replace(r'''[^{'\w":.,}]''', '', regex=True)
     self.rv = bn[bn['block'].isin(fi['block'].values)].copy()
+    bb, nn = self.rv['block'].unique(), bn['netuid'].unique()
+    tempo = bn[['netuid', 'tempo']].drop_duplicates().set_index('netuid').to_dict()['tempo']
+    rv = self.rv[:0].copy()
+    for date, block in fi[['date', 'block']].values:
+        if block in bb: continue
+        for n in nn: rv.loc[len(rv)] = date, block, n, tempo[n], -1, *[float('nan')] * len(rv.columns[5:])
+    self.rv = pd.concat([self.rv, rv])
     self.rv['ochl'] = 'rv'
     return fi.drop_duplicates(kb)
 
@@ -170,7 +176,7 @@ def pldaily(self, date):
             netuid = di['netuid']
             key = uid, hk, netuid
             if rev:
-                try: init, fund, alloc = fa.loc[gg].set_index('netuid').loc[netuid]
+                try: init, fund, alloc = fa.loc[[gg]].set_index('netuid').loc[netuid]
                 except: init, fund, alloc = 0, 0, 0
                 if not init and fund and alloc: self.stupdate(gg, value)
                 diff = (init * fund or value) * alloc - di['value']
