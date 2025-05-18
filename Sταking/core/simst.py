@@ -319,13 +319,12 @@ def args():
     return csv, a.fund, a.end, a.win
 
 def main():
-    global risk_init, win_size
+    global win_size
     csv, fund, end, win = args()
     sim = SimSt(pd.read_csv(csv))
-    risk_init = RISK_INIT_DTAO
-    win_size = win or WIN_SIZE_DTAO
     if fund: sim.fi['fund'] = fund
     if end: sim.bn = sim.bn[sim.bn['date'] <= end]
+    if win: win_size = win
     dates = sorted(sim.bn['date'].unique())
     for date in dates:
         print(date, end='', flush=True)
@@ -353,5 +352,7 @@ SimSt.dnappend = dnappend
 SimSt.hlappend = hlappend
 SimSt.plappend = plappend
 SimSt.scappend = scappend
+risk_init = RISK_INIT_DTAO
+win_size = WIN_SIZE_DTAO
 
 if __name__ == "__main__": main()
