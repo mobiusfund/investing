@@ -24,7 +24,7 @@ The business model and innovations will apply across crypto and other more tradi
 
 ## Roadmap
 
-Phase I - Live at launch: Subnet staking \
+Phase I - Live at launch: Staking strategies \
 Phase II - 3 to 6 months: Portfolio management with US stocks \
 Phase III - 6 months to 1 year: Multi-class asset management in global markets \
 Phase IV - 1 year and beyond: Fully realized, DeAI powered AUM \
@@ -151,9 +151,9 @@ To further limit short-term effects in Bittensor, we make an empirical adjustmen
 \end{aligned}
 ```
 
-We assume $$fund = 1000τ$$ as the initial capital and take slippage into account. Profit and loss are calculated daily at midnight UTC. Yield is determined by price performance of allocated subnets, plus estimated dividends from validator delegation with the default 18% take.
+Finally, a rolling window is applied depending on markets and asset classes. For Tao/Alpha staking, the window size is currently set as $$days = 30$$, considering the nascent and fast-moving nature of the market. For US stocks and other more matured assets, the number will be larger. The window size will be adjusted over time as the subnet evolves.
 
-At the subnet launch, a strategy's ranking is based on a single score calculated over a continuous timeframe. As the subnet grows, it will incorporate multiple weighted timeframes, for example, $$30\ days$$, $$90\ days$$, $$1\ year$$, and $$5\ years$$.
+We assume $$fund = 1000τ$$ as the initial capital and take slippage into account. Profit and loss are calculated daily at midnight UTC. Yield is determined by price performance of allocated subnets, plus estimated dividends from validator delegation with the default 18% take.
 
 #### Performance
 

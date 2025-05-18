@@ -1,20 +1,25 @@
 info = '''
-simst - Sim Stake/Strat, version 0.4.0
+simst - Sim Stake/Strat, version 0.5.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
 
-Usage:  simst strategies_csv [-f initial_fund] [-e end_date]
+Usage:  simst strategies_csv [option...]
         simst -h
 
 Options:
+        -f initial_fund
+        -e end_date
+        -w window_size
+        -h
 -f, --fund      initial fund that overrides the fund column in the csv file
 -e, --end       end date that differs from yesterday (the default)
+-w, --win       score rolling window size in days (default 30 for dtao)
 -h, --help      print this message and exit
 
 Examples:
         simst ../strat/simst.csv
-        simst /tmp/test.csv -f 5000 -e 2025-06-30
+        simst /tmp/test.csv -f 5000 -e 2025-06-30 -w 365
 
 Notes: The strategies csv file has 6 effective columns: uid, date, block,
 init, fund, strat. Other columns are allowed but ignored. A strategy is
@@ -217,7 +222,7 @@ def pldaily(self, date):
         loc += [dd.iloc[-1,-3:]]
         pl.loc[len(pl)] = *gg, date, *[a for z in zip(*loc) for a in z]
 
-    self.ba = hl[self.ba.columns]
+    self.ba = hl[hl['alpha_close'] > 0][self.ba.columns]
     self.dnappend(dh, date)
     self.hlappend(hl)
     self.plappend(pl)
@@ -226,14 +231,15 @@ def pl2sc(self):
     pl, sc = self.pl, self.sc
     pl = pl.sort_values([*pl.columns[:3]])
     for gg, dd in pl.groupby([*pl.columns[:2]]) if len(pl) else []:
+        days, dd = len(dd), dd[-win_size:].copy()
         init = dd['value_open'].iat[0]
         dd['pnl'] = dd['value_close'].diff()
         dd['pnl%'] = dd['pnl'] / dd['value_close'].shift() * 100
         dd['pnl'].iat[0] = dd['value_close'].iat[0] - init
         dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
-        sc.loc[len(sc)] = *gg, dd['date'].iat[-1], *score(dd)
-    sc.loc[sc['days'] < 30, 'score'] *= sc['days'] / (sc['days'] + 5)
-    self.sc = sc.sort_values(['score', 'apy%'], ascending=False)
+        sc.loc[len(sc)] = *gg, dd['date'].iat[-1], days, *score(dd)[1:]
+    sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
+    self.sc = sc.sort_values(['score', 'yield%'], ascending=False)
     self.scappend(sc)
 
 def sc2pct(self):
@@ -266,7 +272,7 @@ def score(dd):
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apy = ((1 + daily / 100) ** 365 - 1) * 100
-    mar = gain / max(risk, 5 / days ** 0.5)
+    mar = gain / max(risk, risk_init / days ** 0.5)
     lsr = dd['pnl'].sum() / (dd['pnl'].abs().sum() or 1e18)
     odds = 50 + kelly(prob, pavg / lavg) / 2 * 100
     if odds <= 0: odds = 0
@@ -295,12 +301,13 @@ def args():
     import argparse
     parser = argparse.ArgumentParser(
         prog = 'simst',
-        usage = 'simst strategies_csv [-f initial_fund] [-e end_date]',
+        usage = 'simst strategies_csv [option...]',
         add_help = False,
     )
     parser.add_argument('csv', metavar='strategies_csv')
     parser.add_argument('-f', '--fund', default=0, type=float)
     parser.add_argument('-e', '--end', default='')
+    parser.add_argument('-w', '--win', default=0, type=int)
     parser.add_argument('-h', '--help', action='store_true')
 
     try: a = parser.parse_args()
@@ -309,11 +316,14 @@ def args():
     if not os.path.isfile(csv) or not os.access(csv, os.R_OK):
         print(f"simst: error: file '{a.csv}' does not exist or is not readable", file=sys.stderr)
         exit(1)
-    return csv, a.fund, a.end
+    return csv, a.fund, a.end, a.win
 
 def main():
-    csv, fund, end = args()
+    global risk_init, win_size
+    csv, fund, end, win = args()
     sim = SimSt(pd.read_csv(csv))
+    risk_init = RISK_INIT_DTAO
+    win_size = win or WIN_SIZE_DTAO
     if fund: sim.fi['fund'] = fund
     if end: sim.bn = sim.bn[sim.bn['date'] <= end]
     dates = sorted(sim.bn['date'].unique())
@@ -323,6 +333,7 @@ def main():
         print(', ' if date < dates[-1] else '.\n', end='', flush=True)
     sim.pl2sc()
     if not len(sim.sc): return
+    print(f'rolling window days: {win_size}')
     print(sim.sc2pct().to_string(index=False))
 
 # reserved for live api server
