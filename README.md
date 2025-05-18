@@ -151,7 +151,7 @@ To further limit short-term effects in Bittensor, we make an empirical adjustmen
 \end{aligned}
 ```
 
-Finally, a rolling window is applied depending on markets and asset classes. For Tao/Alpha staking, the window size is currently set as $$days = 30$$, considering the nascent and fast-moving nature of the market. For US stocks and other more matured assets, the number will be larger. The window size will be adjusted over time as the subnet evolves.
+Finally, a rolling window is applied depending on markets and asset classes. For Tao/Alpha staking, the window size is currently set at 30 days, considering the nascent and fast-moving nature of the market. For US stocks and other more matured assets, the number will be larger. The window size will be adjusted over time as the subnet evolves.
 
 We assume $$fund = 1000τ$$ as the initial capital and take slippage into account. Profit and loss are calculated daily at midnight UTC. Yield is determined by price performance of allocated subnets, plus estimated dividends from validator delegation with the default 18% take.
 

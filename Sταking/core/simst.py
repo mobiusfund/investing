@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.5.1
+simst - Sim Stake/Strat, version 0.5.2
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -231,13 +231,13 @@ def pl2sc(self):
     pl, sc = self.pl, self.sc
     pl = pl.sort_values([*pl.columns[:3]])
     for gg, dd in pl.groupby([*pl.columns[:2]]) if len(pl) else []:
-        days, dd = len(dd), dd[-win_size:].copy()
+        days, dd = len(dd), dd[-self.win_size:].copy()
         init = dd['value_open'].iat[0]
         dd['pnl'] = dd['value_close'].diff()
         dd['pnl%'] = dd['pnl'] / dd['value_close'].shift() * 100
         dd['pnl'].iat[0] = dd['value_close'].iat[0] - init
         dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
-        sc.loc[len(sc)] = *gg, dd['date'].iat[-1], days, *score(dd)[1:]
+        sc.loc[len(sc)] = *gg, dd['date'].iat[-1], days, *score(dd, self.risk_init)[1:]
     sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
     self.sc = sc.sort_values(['score', 'yield%'], ascending=False)
     self.scappend(sc)
@@ -260,7 +260,7 @@ def drawdown(pnl):
         down = max(down, peak - gain[i])
     return down
 
-def score(dd):
+def score(dd, risk_init=1):
     days = len(dd)
     prob = len(dd[dd['pnl%'] > 0]) / days
     pavg = dd['pnl%'][dd['pnl%'] > 0].mean()
@@ -319,12 +319,11 @@ def args():
     return csv, a.fund, a.end, a.win
 
 def main():
-    global win_size
     csv, fund, end, win = args()
     sim = SimSt(pd.read_csv(csv))
     if fund: sim.fi['fund'] = fund
     if end: sim.bn = sim.bn[sim.bn['date'] <= end]
-    if win: win_size = win
+    if win: sim.win_size = win
     dates = sorted(sim.bn['date'].unique())
     for date in dates:
         print(date, end='', flush=True)
@@ -332,7 +331,7 @@ def main():
         print(', ' if date < dates[-1] else '.\n', end='', flush=True)
     sim.pl2sc()
     if not len(sim.sc): return
-    print(f'rolling window days: {win_size}')
+    print(f'rolling window days: {sim.win_size}')
     print(sim.sc2pct().to_string(index=False))
 
 # reserved for live api server
@@ -352,7 +351,7 @@ SimSt.dnappend = dnappend
 SimSt.hlappend = hlappend
 SimSt.plappend = plappend
 SimSt.scappend = scappend
-risk_init = RISK_INIT_DTAO
-win_size = WIN_SIZE_DTAO
+SimSt.risk_init = RISK_INIT_DTAO
+SimSt.win_size = WIN_SIZE_DTAO
 
 if __name__ == "__main__": main()
