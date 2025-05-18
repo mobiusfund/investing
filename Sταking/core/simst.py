@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.5.0
+simst - Sim Stake/Strat, version 0.5.1
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
