@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.5.2
+simst - Sim Stake/Strat, version 0.6.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -106,12 +106,11 @@ def initfund(self):
         fi.loc[len(fi)] = di['uid'], hk, date, block, init, *di[['fund', 'strat']]
     fi['strat'] = fi['strat'].str.replace(r'''[^{'\w":.,}]''', '', regex=True)
     self.rv = bn[bn['block'].isin(fi['block'].values)].copy()
-    bb, nn = self.rv['block'].unique(), bn['netuid'].unique()
     tempo = bn[['netuid', 'tempo']].drop_duplicates().set_index('netuid').to_dict()['tempo']
     rv = self.rv[:0].copy()
     for date, block in fi[['date', 'block']].values:
-        if block in bb: continue
-        for n in nn: rv.loc[len(rv)] = date, block, n, tempo[n], -1, *[float('nan')] * len(rv.columns[5:])
+        for n in [n for n in bn['netuid'].unique() if n not in bn[bn['block'] == block]['netuid'].values]:
+            rv.loc[len(rv)] = date, block, n, tempo[n], -1, *[float('nan')] * len(rv.columns[5:])
     self.rv = pd.concat([self.rv, rv])
     self.rv['ochl'] = 'rv'
     return fi.drop_duplicates(kb)
@@ -145,16 +144,16 @@ def pldaily(self, date):
         except: block0, alpha0 = dd['block'].iat[0], 0
         blocks = dd['block'].diff()
         blocks.iat[0] = dd['block'].iat[0] - block0
-        dd.loc[dd['weight'] == 0, 'weight'] = 1e18
-        onediv = list(dd['emission'] * (1 - VALI_TAKE) * blocks / (dd['tempo'] + 1) / dd['weight'])
-        alpha = [alpha0 * (1 + onediv[0])]
-        for i in range(1, len(dd)): alpha.append(alpha[i-1] * (1 + onediv[i]))
-        dd['onediv'] = onediv
+        dd.loc[dd['emission'].isna(), 'emission'] = 0
+        dd.loc[dd['weight'].isna() | (dd['weight'] == 0), 'weight'] = 1e18
+        bbdiv = list(dd['emission'] * (1 - VALI_TAKE) * blocks / (dd['tempo'] + 1) / dd['weight'])
+        alpha = [alpha0 * (1 + bbdiv[0])]
+        for i in range(1, len(dd)): alpha.append(alpha[i-1] * (1 + bbdiv[i]))
+        dd['bbdiv'] = bbdiv
         dd['alpha'] = alpha
         dd['value'] = dd['alpha'] * dd['price']
-        dd['init'] = 0.0
         dd['swap'] = [float('nan')] * len(dd)
-        dd.loc[dd['onediv'].isna(), 'onediv'] = 0
+        dd['init'] = 0.0
         dd.insert(0, 'hotkey', hk)
         dd.insert(0, 'uid', uid)
         dg = pd.concat([dg, dd])
@@ -172,10 +171,12 @@ def pldaily(self, date):
                 try: alpha0[key] = ba.loc[key].iat[-1]
                 except: alpha0[key] = 0
             alpha0n[netuid] = alpha0[key]
-        dd['alpha'] = dd['netuid'].map(alpha0n.get) * (1 + dd['onediv'])
+        dd['alpha'] = dd['netuid'].map(alpha0n.get) * (1 + dd['bbdiv'])
         dd['value'] = dd['alpha'] * dd['price']
+        dd['swap'] = dd['tao_in'] - dd['tao_in'] * dd['alpha_in'] / (dd['alpha_in'] + dd['alpha'])
+        dd.loc[dd['netuid'] == 0, 'swap'] = dd['alpha']
 
-        value = dd.drop_duplicates(kn)['value'].sum()
+        swap = dd.drop_duplicates(kn)['swap'].sum()
         for i in dd.index:
             di = dict(dd.loc[i])
             netuid = di['netuid']
@@ -183,24 +184,25 @@ def pldaily(self, date):
             if rev:
                 try: init, fund, alloc = fa.loc[[gg]].set_index('netuid').loc[netuid]
                 except: init, fund, alloc = 0, 0, 0
-                if not init and fund and alloc: self.stupdate(gg, value)
-                diff = (init * fund or value) * alloc - di['value']
-                di['alpha'] += di['alpha_in'] - di['tao_in'] * di['alpha_in'] / (di['tao_in'] + diff) if netuid else diff
-                di['alpha'] -= np.abs(diff) * di['emission'] / di['weight'] if netuid else 0 # staking/unstaking fee
-                if di['alpha'] < 0 or di['alpha'] >= di['alpha_in']: di['alpha'] = 0
+                if not init and fund and alloc: self.stupdate(gg, swap)
+                diffs = (init * fund or swap) * alloc - di['swap']
+                if di['tao_in'] + diffs <= 0 and netuid: diffa = -di['alpha']
+                else: diffa = di['alpha_in'] - di['tao_in'] * di['alpha_in'] / (di['tao_in'] + diffs) if netuid else diffs
+                di['alpha'] += diffa - np.abs(diffa) * di['emission'] / di['weight']
+                if di['alpha'] < 0: di['alpha'] = 0
                 dd.loc[i,'alpha'] = di['alpha']
                 dd.loc[i,'value'] = di['alpha'] * di['price']
+                dd.loc[i,'swap'] = di['tao_in'] - di['tao_in'] * di['alpha_in'] / (di['alpha_in'] + di['alpha']) if netuid else di['alpha']
                 dd.loc[i,'init'] = init * fund * alloc
-            dd.loc[i,'swap'] = di['tao_in'] - di['tao_in'] * di['alpha_in'] / (di['alpha_in'] + di['alpha']) if netuid else di['alpha']
             alpha0[key] = di['alpha']
         dh = pd.concat([dh, dd])
 
     col = ['block', 'price', 'alpha', 'value', 'swap']
-    hl = self.hl.copy()
+    hl = self.hl[:0].copy()
     for gg, dd in dh.groupby(kn) if len(dh) else []:
         dd = dd.reset_index(drop=True)
         if dd['init'].any():
-            dd.loc[dd['init'] > 0, 'value'] = dd.loc[dd['init'] > 0, 'init']
+            dd.loc[dd['init'] > 0, ['value', 'swap']] = dd['init']
             dd = dd[dd['block'] >= dd[dd['init'] > 0]['block'].iat[0]]
         loc  = [dd.iloc[0][col]]
         loc += [dd[dd['value'] == dd['value'].max()].iloc[-1][col]]
@@ -212,7 +214,7 @@ def pldaily(self, date):
     for gg, dd in dh.groupby(kk) if len(dh) else []:
         dd = dd.reset_index(drop=True)
         if dd['init'].any():
-            dd.loc[dd['init'] > 0, 'value'] = dd.loc[dd['init'] > 0, 'init']
+            dd.loc[dd['init'] > 0, ['value', 'swap']] = dd['init']
             dd = dd[dd['block'] >= dd[dd['init'] > 0]['block'].iat[0]]
         dd = dd[dd['ochl'].isin(['o', 'c', 'hour', 'rv'])].drop_duplicates(['block', 'netuid'])
         dd = dd[kb + col[-2:]].groupby(kb).sum().reset_index()
@@ -232,10 +234,10 @@ def pl2sc(self):
     pl = pl.sort_values([*pl.columns[:3]])
     for gg, dd in pl.groupby([*pl.columns[:2]]) if len(pl) else []:
         days, dd = len(dd), dd[-self.win_size:].copy()
-        init = dd['value_open'].iat[0]
-        dd['pnl'] = dd['value_close'].diff()
-        dd['pnl%'] = dd['pnl'] / dd['value_close'].shift() * 100
-        dd['pnl'].iat[0] = dd['value_close'].iat[0] - init
+        init = dd['swap_open'].iat[0]
+        dd['pnl'] = dd['swap_close'].diff()
+        dd['pnl%'] = dd['pnl'] / dd['swap_close'].shift() * 100
+        dd['pnl'].iat[0] = dd['swap_close'].iat[0] - init
         dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
         sc.loc[len(sc)] = *gg, dd['date'].iat[-1], days, *score(dd, self.risk_init)[1:]
     sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
@@ -265,10 +267,10 @@ def score(dd, risk_init=1):
     prob = len(dd[dd['pnl%'] > 0]) / days
     pavg = dd['pnl%'][dd['pnl%'] > 0].mean()
     lavg = dd['pnl%'][dd['pnl%'] < 0].mean() * -1
-    init = dd['value_open'].iat[0]
-    fund = dd['value_close'].iat[-1]
+    value = dd['value_close'].iat[-1]
     swap = dd['swap_close'].iat[-1]
-    gain = (fund - init) / init * 100
+    init = dd['swap_open'].iat[0]
+    gain = (swap - init) / init * 100
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apy = ((1 + daily / 100) ** 365 - 1) * 100
@@ -280,7 +282,7 @@ def score(dd, risk_init=1):
     score = mar * lsr * odds * daily
     if score <= 0: score = 0
     return [days,
-        float('{:.2f}'.format(fund)),
+        float('{:.2f}'.format(value)),
         float('{:.2f}'.format(swap)),
         float('{:.2f}'.format(score)),
         float('{:.2f}'.format(apy)),
