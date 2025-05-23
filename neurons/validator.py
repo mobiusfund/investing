@@ -64,10 +64,12 @@ class Validator(BaseValidatorNeuron):
             if int(time.strftime('%M')) in [25, 55]: break
             time.sleep(1)
         time.sleep(random.randint(25, 55))
-        pl = api.pnl()
-        if not len(pl): return
-        bt.logging.info('Calculating score...')
-        self.scores = etc.score(pl, self.metagraph.n)
+        try:
+            pl = api.pnl()
+            if not len(pl): return
+            bt.logging.info('Calculating score...')
+            self.scores = etc.score(pl, self.metagraph.n)
+        except: pass
 
 
 # The main function parses the configuration and runs the validator.

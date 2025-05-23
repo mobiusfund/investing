@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.6.0
+simst - Sim Stake/Strat, version 0.6.1
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -224,7 +224,7 @@ def pldaily(self, date):
         loc += [dd.iloc[-1,-3:]]
         pl.loc[len(pl)] = *gg, date, *[a for z in zip(*loc) for a in z]
 
-    self.ba = hl[hl['alpha_close'] > 0][self.ba.columns]
+    self.ba = hl[hl['alpha_close'] > 1e-6][self.ba.columns]
     self.dnappend(dh, date)
     self.hlappend(hl)
     self.plappend(pl)
