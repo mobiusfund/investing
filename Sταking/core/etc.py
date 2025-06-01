@@ -2,6 +2,7 @@
 
 import os, requests
 from .const import RAWGIT_ROOT
+from .const import BURN_DECAY, BURN_CUTOFF
 from .simst import SimSt
 
 def update():
@@ -28,7 +29,7 @@ def isnew(ss58):
 def issimilar():
     pass
 
-def score(pl, n):
+def score(pl, da, n):
     sim = SimSt()
     sim.pl = pl
     sim.pl2sc()
@@ -37,4 +38,7 @@ def score(pl, n):
     print(sim.sc2pct().to_string(index=False))
     sc = sim.sc
     score = [sc[sc['uid'] == i]['score'].iat[0] if i in sc['uid'].values else 0 for i in range(n)]
+    da = da[da['uid'] < n]
+    burn = (da['last'].sum() / da['days'].sum()) ** BURN_DECAY
+    if burn > BURN_CUTOFF: score[0] = sum(score) * burn / (1 - burn)
     return score

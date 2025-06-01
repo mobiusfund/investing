@@ -33,6 +33,18 @@ def pnl():
     btlog(r)
     return pl
 
+def days():
+    bt.logging.info('Fetching days active...')
+    da = pd.read_csv(f'{cd}/db/days.col')
+    try: r = requests.get(f'{API_ROOT}/days')
+    except:
+        traceback.print_exc(1, file=sys.stdout)
+        return da
+    if r.status_code == 200:
+        da = pd.DataFrame(json.loads(r.json()), None, da.columns)
+    btlog(r)
+    return da
+
 def btlog(r):
     if r.status_code <= 201: log = bt.logging.info
     else: log = bt.logging.error
