@@ -2,7 +2,7 @@
 
 import os, requests
 from .const import RAWGIT_ROOT
-from .const import BURN_DECAY, BURN_CUTOFF
+from .const import DEC_UID, DEC_DECAY, DEC_CUTOFF
 from .simst import SimSt
 
 def update():
@@ -39,6 +39,6 @@ def score(pl, da, n):
     sc = sim.sc
     score = [sc[sc['uid'] == i]['score'].iat[0] if i in sc['uid'].values else 0 for i in range(n)]
     da = da[da['uid'] < n]
-    burn = (da['last'].sum() / da['days'].sum()) ** BURN_DECAY
-    if burn > BURN_CUTOFF: score[0] = sum(score) * burn / (1 - burn)
-    return score
+    dec = (da['last'].sum() / da['days'].sum()) ** DEC_DECAY
+    if dec > DEC_CUTOFF: score[DEC_UID] = sum(score) * dec / (1 - dec)
+    return score, DEC_UID, dec
