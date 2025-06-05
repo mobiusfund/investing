@@ -27,7 +27,7 @@ The business model and innovations will apply across crypto and other more tradi
 Phase I - Live at launch: Staking strategies \
 Phase II - 3 to 6 months: Portfolio management with US stocks \
 Phase III - 6 months to 1 year: Multi-class asset management in global markets \
-Phase IV - 1 year and beyond: Fully realized, DeAI powered AUM \
+Phase IV - 1 year and beyond: Fully realized, DeFAI powered AUM \
 In parallel - Ongoing: A frontend AUM app serving real-world investors
 
 ## Installation
@@ -141,6 +141,7 @@ There are two edge cases when a strategy is getting started: All days are loss d
 ```math
 \begin{aligned}
 & mar = yield\% / max( risk\%,\ \frac {\ 5\ } {\ \sqrt { days\ }\ } )
+\\
 \end{aligned}
 ```
 
@@ -148,6 +149,17 @@ To further limit short-term effects in Bittensor, we make an empirical adjustmen
 ```math
 \begin{aligned}
 & score = score\ *\ \frac {\ days\ } {\ days + 5\ },\ if\ days < 30
+\\
+\end{aligned}
+```
+
+To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic Emission Control in live code:
+```math
+\begin{aligned}
+& dec = \left( \frac {\ last\ active\ } {\ days + 1\ } \right) ^ {3},\ if\ days > window \\
+\\
+& score = score\ *\ \left( 1 - dec \right),\ if\ dec > 0.03 \\
+\\
 \end{aligned}
 ```
 

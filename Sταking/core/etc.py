@@ -33,12 +33,15 @@ def score(pl, da, n):
     sim = SimSt()
     sim.pl = pl
     sim.pl2sc()
-    sc = sim.sc
+    sc = sim.sc.join(da.set_index('uid')['last'], 'uid')
+    dec = (sc['last'] / (sc['days'] + 1)) ** DEC_DECAY
+    sc.loc[(dec > DEC_CUTOFF) & (sc['days'] > sim.win_size), 'score'] *= 1 - dec
+    sc.insert(4, 'last', sc.pop('last'))
     sim.sc = sc[sc['uid'] < n]
     print(sim.sc2pct().to_string(index=False))
     sc = sim.sc
     score = [sc[sc['uid'] == i]['score'].iat[0] if i in sc['uid'].values else 0 for i in range(n)]
-    da = da[da['uid'] < n]
-    dec = (da['last'].sum() / da['days'].sum()) ** DEC_DECAY
+    dec = (sc['last'].sum() / (sc['days'] + 1).sum()) ** DEC_DECAY
     if dec > DEC_CUTOFF: score[DEC_UID] = sum(score) * dec / (1 - dec)
+    if not any(score): score[DEC_UID] = 1
     return score, DEC_UID, dec
