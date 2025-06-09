@@ -2,7 +2,7 @@
 
 import os, requests
 from .const import RAWGIT_ROOT
-from .const import DEC_UID, DEC_DECAY, DEC_CUTOFF
+from .const import DEC_UID, DEC_DECAY, DEC_CUTOFF, DAYS_FINAL
 from .simst import SimSt
 
 def update():
@@ -35,7 +35,7 @@ def score(pl, da, n):
     sim.pl2sc()
     sc = sim.sc.join(da.set_index('uid')['last'], 'uid')
     dec = (sc['last'] / (sc['days'] + 1)) ** DEC_DECAY
-    sc.loc[(dec > DEC_CUTOFF) & (sc['days'] > sim.win_size), 'score'] *= 1 - dec
+    sc.loc[(dec > DEC_CUTOFF) & (sc['days'] > DAYS_FINAL), 'score'] *= 1 - dec
     sc.insert(4, 'last', sc.pop('last'))
     sim.sc = sc[sc['uid'] < n]
     print(sim.sc2pct().to_string(index=False))

@@ -145,10 +145,10 @@ There are two edge cases when a strategy is getting started: All days are loss d
 \end{aligned}
 ```
 
-To further limit short-term effects in Bittensor, we make an empirical adjustment to $$score$$ in live code:
+To limit short-term random effects, we make an empirical adjustment to $$score$$ in live code:
 ```math
 \begin{aligned}
-& score = score\ *\ \frac {\ days\ } {\ days + 5\ },\ if\ days < 30
+& score = score\ *\ \frac {\ days\ } {\ 30\ },\ if\ days < 30
 \\
 \end{aligned}
 ```
@@ -156,7 +156,7 @@ To further limit short-term effects in Bittensor, we make an empirical adjustmen
 To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic Emission Control in live code:
 ```math
 \begin{aligned}
-& dec = \left( \frac {\ last\ active\ } {\ days + 1\ } \right) ^ {3},\ if\ days > window \\
+& dec = \left( \frac {\ last\ active\ } {\ days + 1\ } \right) ^ {3},\ if\ days > 30 \\
 \\
 & score = score\ *\ \left( 1 - dec \right),\ if\ dec > 0.03 \\
 \\

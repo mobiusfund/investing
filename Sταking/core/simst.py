@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.6.1
+simst - Sim Stake/Strat, version 0.6.5
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -240,7 +240,8 @@ def pl2sc(self):
         dd['pnl'].iat[0] = dd['swap_close'].iat[0] - init
         dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
         sc.loc[len(sc)] = *gg, dd['date'].iat[-1], days, *score(dd, self.risk_init)[1:]
-    sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
+    #sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
+    sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= (sc['days'] / DAYS_FINAL) ** DAYS_DELAY
     self.sc = sc.sort_values(['score', 'yield%'], ascending=False)
     self.scappend(sc)
 
