@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.6.6
+simst - Sim Stake/Strat, version 0.6.7
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -250,6 +250,7 @@ def sc2pct(self):
     jj = [j for j in sc.columns if j[-1:] == '%' and j != 'daily%']
     sc[jj] = sc[jj].map('{:.2f}%'.format)
     sc['daily%'] = sc['daily%'].map('{:.4f}%'.format)
+    sc['score'] = sc['score'].map('{:.2f}'.format)
     if not sc['hotkey'].sum(): sc = sc.drop('hotkey', axis=1)
     return sc
 
