@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.6.5
+simst - Sim Stake/Strat, version 0.6.6
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -285,7 +285,7 @@ def score(dd, risk_init=1):
     return [days,
         float('{:.2f}'.format(value)),
         float('{:.2f}'.format(swap)),
-        float('{:.2f}'.format(score)),
+        score, #float('{:.2f}'.format(score)),
         float('{:.2f}'.format(apy)),
         float('{:.4f}'.format(lsr)),
         float('{:.2f}'.format(mar)),
