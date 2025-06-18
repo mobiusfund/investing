@@ -45,6 +45,17 @@ def days():
     btlog(r)
     return da
 
+def dist():
+    bt.logging.info('Fetching dedupe data...')
+    try: r = requests.get(f'{API_ROOT}/dist')
+    except:
+        traceback.print_exc(1, file=sys.stdout)
+        return []
+    if r.status_code == 200:
+        ab = json.loads(r.json())
+    btlog(r)
+    return ab
+
 def btlog(r):
     if r.status_code <= 201: log = bt.logging.info
     else: log = bt.logging.error

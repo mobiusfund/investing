@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.6.7
+simst - Sim Stake/Strat, version 0.7.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -247,12 +247,16 @@ def pl2sc(self):
 
 def sc2pct(self):
     sc = self.sc.copy()
-    jj = [j for j in sc.columns if j[-1:] == '%' and j != 'daily%']
-    sc[jj] = sc[jj].map('{:.2f}%'.format)
+    j2 = ['value', 'swap', 'score', 'mar']
+    jp = [j for j in sc.columns if j[-1:] == '%' and j != 'daily%']
+    sc[j2] = sc[j2].map('{:.2f}'.format)
+    sc[jp] = sc[jp].map('{:.2f}%'.format)
+    sc['lsr'] = sc['lsr'].map('{:.4f}'.format)
     sc['daily%'] = sc['daily%'].map('{:.4f}%'.format)
-    sc['score'] = sc['score'].map('{:.2f}'.format)
     if not sc['hotkey'].sum(): sc = sc.drop('hotkey', axis=1)
     return sc
+
+def asset(x): return x.get('_', 0)
 
 def kelly(p, b): return (p * (b + 1) - 1) / b
 
@@ -283,18 +287,7 @@ def score(dd, risk_init=1):
     if np.isnan(odds): odds = prob * 100
     score = mar * lsr * odds * daily
     if score <= 0: score = 0
-    return [days,
-        float('{:.2f}'.format(value)),
-        float('{:.2f}'.format(swap)),
-        score, #float('{:.2f}'.format(score)),
-        float('{:.2f}'.format(apy)),
-        float('{:.4f}'.format(lsr)),
-        float('{:.2f}'.format(mar)),
-        float('{:.2f}'.format(risk)),
-        float('{:.2f}'.format(odds)),
-        float('{:.4f}'.format(daily)),
-        float('{:.2f}'.format(gain)),
-    ]
+    return days, value, swap, score, apy, lsr, mar, risk, odds, daily, gain
 
 def args():
     cwd = ''

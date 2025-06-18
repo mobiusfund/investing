@@ -5,6 +5,9 @@ RAWGIT_ROOT = 'https://raw.githubusercontent.com/mobiusfund/staking'
 VALI_TAKE = 0.18
 TAO_WEIGHT = 0.18
 
+DD_TRIGGER = 0.01
+DD_POWER = 1
+
 DEC_UID = 0
 DEC_DECAY = 3
 DEC_CUTOFF = 0.03
