@@ -34,27 +34,31 @@ def dist(st, nn):
         x = [x[k] if k and k in x else 0 for k in nn[asset(x)]]
         s = sum([abs(a) for a in x])
         return [a / s for a in x] if s > 1e-6 else []
-    ab = [[] for i in range(len(nn))]
-    for i in range(len(nn)):
+    ab = [[] for i in range(len(nn) + 1)]
+    for i in range(len(ab) - 1):
         df = st[st['strat'].map(eval).map(asset) == i].copy()
         df['alloc'] = df['strat'].map(eval).map(fn)
         for j, di in df.reset_index().iterrows():
             kk, a, b = di[['uid', 'hotkey']], di['alloc'], di['block']
-            ab[i].append([*kk, *df['alloc'].map(lambda x: math.dist(a, x) if a and x else 1.0)])
+            ab[i].append([*kk, *df['alloc'].map(lambda x: math.dist(a, x) if a and x else 1)])
             ab[i].append([*kk, *df['block'].map(lambda x: b - x)])
-            ab[i][-2][j+2] = 0.0
+            ab[i][-2][j+2] = 0
+    for i in [0, 1]: ab[-1].append([])
     return ab
 
 def dedupe(ab):
     dd = pd.DataFrame([], pd.Index([], name='uid'), ['dedupe'])
-    for i in range(len(ab)):
+    for i in range(len(ab) - 1):
         da = pd.DataFrame(ab[i][0::2], columns=['uid', '', *[*zip(*ab[i])][0][0::2]]).set_index('uid').iloc[:,1:]
         db = pd.DataFrame(ab[i][1::2], columns=['uid', '', *[*zip(*ab[i])][0][1::2]]).set_index('uid').iloc[:,1:]
         print(da.map('{:.4f}'.format).reset_index().to_string(index=False))
         print(db.reset_index().to_string(index=False))
         for uid, di in da.iterrows():
             du = db.loc[uid, di[(di.index != uid) & (di < DD_TRIGGER)].index]
-            dd.loc[uid] = (du[du >= 0].min() / 7200 / DAYS_FINAL) ** DD_POWER
+            dd.loc[uid] = min((du[du >= 0].min() / 7200 / DAYS_FINAL) ** DD_POWER, 1)
+    for i in [0, 1]:
+        print(f"{['black', 'white'][i]}list: {ab[-1][i]}")
+        dd.loc[dd.index.isin(ab[-1][i])] = i
     print(dd.dropna().reset_index().to_string(index=False))
     return dd
 
