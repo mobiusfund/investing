@@ -50,7 +50,7 @@ def dedupe(ab):
     for i in range(len(ab)):
         da = pd.DataFrame(ab[i][0::2], columns=['uid', '', *[*zip(*ab[i])][0][0::2]]).set_index('uid').iloc[:,1:]
         db = pd.DataFrame(ab[i][1::2], columns=['uid', '', *[*zip(*ab[i])][0][1::2]]).set_index('uid').iloc[:,1:]
-        print(da.reset_index().to_string(index=False))
+        print(da.map('{:.4f}'.format).reset_index().to_string(index=False))
         print(db.reset_index().to_string(index=False))
         for uid, di in da.iterrows():
             du = db.loc[uid, di[(di.index != uid) & (di < DD_TRIGGER)].index]
@@ -65,7 +65,7 @@ def score(pl, ab, da, n):
 
     sc = sim.sc.join(dedupe(ab), 'uid')
     sc.loc[~sc['dedupe'].isna(), 'score'] *= sc['dedupe']
-    sc.insert(7, 'dedupe', sc.pop('dedupe'))
+    sc.insert(7, 'dedupe', sc.pop('dedupe').round(4))
 
     sc = sc.join(da.set_index('uid')['last'], 'uid')
     dec = (sc['last'] / (sc['days'] + 1)) ** DEC_DECAY
