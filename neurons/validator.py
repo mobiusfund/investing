@@ -19,8 +19,8 @@
 
 import os, time, random
 import bittensor as bt
-import Sταking.core.api as api
-import Sταking.core.etc as etc
+import Investing.core.api as api
+import Investing.core.etc as etc
 
 # import base validator class which takes care of most of the boilerplate
 from template.base.validator import BaseValidatorNeuron

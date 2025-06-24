@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Stake/Strat, version 0.7.0
+simst - Sim Strat, version 0.8.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -30,10 +30,10 @@ Block-level precision may be simulated using Pandas 'interpolate()', if a
 given block is not found in available market data. By default, simst comes
 with an auto updated market database with hourly precision.
 
-This tool is a part of Sταking, the Bittensor subnet that optimizes staking
-strategies. Please visit:
+This tool is a part of Bittensor subnet 88 - Investing, the world's first
+DeFAI powered AUM. Please visit:
 
-https://github.com/mobiusfund/staking
+https://github.com/mobiusfund/investing
 '''
 
 import os, sys, time
@@ -45,6 +45,7 @@ from .const import *
 
 kk = ['uid', 'hotkey']
 kb = [*kk, 'block']
+ka = [*kk, 'asset']
 kn = [*kk, 'netuid']
 cd = os.path.dirname(os.path.realpath(__file__))
 
@@ -146,7 +147,7 @@ def pldaily(self, date):
         blocks.iat[0] = dd['block'].iat[0] - block0
         dd.loc[dd['emission'].isna(), 'emission'] = 0
         dd.loc[dd['weight'].isna() | (dd['weight'] == 0), 'weight'] = 1e18
-        bbdiv = list(dd['emission'] * (1 - VALI_TAKE) * blocks / (dd['tempo'] + 1) / dd['weight'])
+        bbdiv = list(dd['emission'] * (1 - self.vali_take) * blocks / (dd['tempo'] + 1) / dd['weight'])
         alpha = [alpha0 * (1 + bbdiv[0])]
         for i in range(1, len(dd)): alpha.append(alpha[i-1] * (1 + bbdiv[i]))
         dd['bbdiv'] = bbdiv
@@ -188,7 +189,7 @@ def pldaily(self, date):
                 diffs = (init * fund or swap) * alloc - di['swap']
                 if di['tao_in'] + diffs <= 0 and netuid: diffa = -di['alpha']
                 else: diffa = di['alpha_in'] - di['tao_in'] * di['alpha_in'] / (di['tao_in'] + diffs) if netuid else diffs
-                di['alpha'] += diffa - np.abs(diffa) * di['emission'] / di['weight']
+                di['alpha'] += diffa - abs(diffa) * di['emission'] / di['weight']
                 if di['alpha'] < 0: di['alpha'] = 0
                 dd.loc[i,'alpha'] = di['alpha']
                 dd.loc[i,'value'] = di['alpha'] * di['price']
@@ -222,7 +223,7 @@ def pldaily(self, date):
         loc += [dd[dd['value'] == dd['value'].max()].iloc[-1,-3:]]
         loc += [dd[dd['value'] == dd['value'].min()].iloc[-1,-3:]]
         loc += [dd.iloc[-1,-3:]]
-        pl.loc[len(pl)] = *gg, date, *[a for z in zip(*loc) for a in z]
+        pl.loc[len(pl)] = *gg, date, 0, *[a for z in zip(*loc) for a in z]
 
     self.ba = hl[hl['alpha_close'] > 1e-6][self.ba.columns]
     self.dnappend(dh, date)
@@ -242,7 +243,7 @@ def pl2sc(self):
         sc.loc[len(sc)] = *gg, dd['date'].iat[-1], days, *score(dd, self.risk_init)[1:]
     #sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
     sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= (sc['days'] / DAYS_FINAL) ** DAYS_DELAY
-    self.sc = sc.sort_values(['score', 'yield%'], ascending=False)
+    self.sc = sc.sort_values(['score', 'return%'], ascending=False)
     self.scappend(sc)
 
 def sc2pct(self):
@@ -279,7 +280,7 @@ def score(dd, risk_init=1):
     gain = (swap - init) / init * 100
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
-    apy = ((1 + daily / 100) ** 365 - 1) * 100
+    apr = ((1 + daily / 100) ** 365 - 1) * 100
     mar = gain / max(risk, risk_init / days ** 0.5)
     lsr = dd['pnl'].sum() / (dd['pnl'].abs().sum() or 1e18)
     odds = 50 + kelly(prob, pavg / lavg) / 2 * 100
@@ -287,13 +288,13 @@ def score(dd, risk_init=1):
     if np.isnan(odds): odds = prob * 100
     score = mar * lsr * odds * daily
     if score <= 0: score = 0
-    return days, value, swap, score, apy, lsr, mar, risk, odds, daily, gain
+    return days, value, swap, score, apr, lsr, mar, risk, odds, daily, gain
 
 def args():
     cwd = ''
     if (sys.argv[-1][:2] + sys.argv[-1][-1:]) == '///': cwd = sys.argv.pop()[1:]
     if len(sys.argv) == 2 and sys.argv[1] in ['-h', '--help']: print(info), exit()
-    if len(sys.argv) == 1: print('simst - Sim Stake/Strat\n')
+    if len(sys.argv) == 1: print('simst - Sim Strat\n')
 
     import argparse
     parser = argparse.ArgumentParser(
@@ -348,7 +349,9 @@ SimSt.dnappend = dnappend
 SimSt.hlappend = hlappend
 SimSt.plappend = plappend
 SimSt.scappend = scappend
-SimSt.risk_init = RISK_INIT_DTAO
-SimSt.win_size = WIN_SIZE_DTAO
+
+SimSt.vali_take = float(os.getenv('SIMST_VALI_TAKE', VALI_TAKE))
+SimSt.risk_init = float(os.getenv('SIMST_RISK_INIT', RISK_INIT_DTAO))
+SimSt.win_size = int(os.getenv('SIMST_WIN_SIZE', WIN_SIZE_DTAO))
 
 if __name__ == "__main__": main()

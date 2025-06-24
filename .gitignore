@@ -1,5 +1,5 @@
-# Sταking
-Sταking/core/db/daily.db
+# Investing
+Investing/core/db/*.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,8 +1,8 @@
 <div align="center">
 
-# **Sταking**
-## Optimizing Staking Strategies
-[Dashboard](https://stakingalpha.com) • [Discord](https://discord.gg/bittensor) • [X](https://x.com/StakingAlpha88)
+# **Investing**
+## DeFAI powered AUM
+[Dashboard](https://db.investing88.ai) • [Discord](https://discord.com/channels/799672011265015819/1358854051634221328) • [X](https://x.com/Investing88ai)
 </div>
 
 ---
@@ -16,11 +16,11 @@
 
 ## Intro
 
-Sταking is the Bittensor subnet that optimizes staking strategies in the Tao/Alpha ecosystem. By the community and for the community, it also provides services for outside retail and institutional investors.
+Envisioned as the world's first DeFAI powered AUM, leveraging a decentralized network of both human and artificial intelligence, Investing is the Bittensor subnet with the mission to provide investment services for both retail and institutional investors.
 
-Miners share their strategies, while validators evaluate them using a [scoring algorithm](#Scoring). All results are displayed on the [StakingAlpha.com dashboard](https://stakingalpha.com).
+The initial phase at launch is optimizing staking strategies in the Tao/Alpha ecosystem, by the community and for the community.
 
-The business model and innovations will apply across crypto and other more traditional markets, extract alpha from these markets, minimize risks, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.pwc.com/ng/en/press-room/global-assets-under-management-set-to-rise.html) asset management industry.
+The resulting business model and innovations will apply across crypto and other more traditional markets, extract alpha from these markets, minimize risks, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.pwc.com/ng/en/press-room/global-assets-under-management-set-to-rise.html) asset management industry.
 
 ## Roadmap
 
@@ -32,13 +32,16 @@ In parallel - Ongoing: A frontend AUM app serving real-world investors
 
 ## Installation
 
-Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks, including macOS.
+Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks, including macOS. For first-time miners, please follow the [Bittensor document](https://docs.learnbittensor.org/miners/) to register a hotkey.
 
 #### Setup
 
 ```bash
-git clone https://github.com/mobiusfund/staking
-cd staking
+sudo apt update
+sudo apt install npm -y
+sudo npm install pm2 -g
+git clone https://github.com/mobiusfund/investing
+cd investing
 # optional
 python -m venv .venv
 . .venv/bin/activate
@@ -53,7 +56,7 @@ python -m pip install -e .
 . .venv/bin/activate
 #
 pm2 start neurons/miner.py \
-    --name staking-miner -- \
+    --name investing-miner -- \
     --wallet.name {coldkey} \
     --wallet.hotkey {hotkey} \
     --netuid 88 #339 --subtensor.network test
@@ -66,7 +69,7 @@ pm2 start neurons/miner.py \
 . .venv/bin/activate
 #
 pm2 start neurons/validator.py \
-    --name staking-validator -- \
+    --name investing-validator -- \
     --wallet.name {coldkey} \
     --wallet.hotkey {hotkey} \
     --netuid 88 #339 --subtensor.network test
@@ -74,11 +77,11 @@ pm2 start neurons/validator.py \
 
 ## Mining
 
-When a strategy is filed under the `Sταking/strat/` directory, it will be automatically submitted by the miner. Please see [README](https://github.com/mobiusfund/staking/tree/main/Sταking/strat) for further info.
+When a strategy is filed under the `Investing/strat/` directory, it will be automatically submitted by the miner. Please see [README](https://github.com/mobiusfund/investing/tree/main/Investing/strat) for further info.
 
 A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in subnet allocation will incur slippage costs as well as staking/unstaking fees.
 
-All strategy updates will be shown on the dashboard immediately. Daily score calculation will take place after midnight UTC.
+All strategy updates will be shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation will take place after midnight UTC.
 
 One machine can run multiple miners with their corresponding strategies, with an extra argument e.g. `--axon.port 8092` added to the `pm2` command. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
@@ -86,7 +89,7 @@ A newly registered miner goes live on the dashboard after day 1, with an immunit
 
 #### Testnet
 
-Testnet can be used for connection testing. Testnet strategies will not be accepted nor evaluated. Both testnet and mainnet miners can easily evaluate their strategies using the `Sταking/bin/simst` command.
+Testnet can be used for connection testing. Testnet strategies will not be accepted nor evaluated. Both testnet and mainnet miners can easily evaluate their strategies using the `Investing/bin/simst` command.
 
 ## Scoring
 
@@ -98,7 +101,7 @@ A simple number $$score$$ is used to evaluate strategies, where:
 \begin{aligned}
 & fund = initial\ capital \\
 \\
-& days = days\ staking \\
+& days = days\ investing \\
 \\
 & pnl = daily\ profit\ or\ loss \\
 \\
@@ -114,21 +117,21 @@ A simple number $$score$$ is used to evaluate strategies, where:
 \\
 & kelly = \text{–}1,\ if < \text{–}1 \\
 \\
-& yield = \sum_{1}^{days} pnl = fund_{days} - fund \\
+& return = \sum_{1}^{days} pnl = fund_{days} - fund \\
 \\
-& yield\% = \frac {\ yield\ } {\ fund\ } \cdot 100 \\
+& return\% = \frac {\ return\ } {\ fund\ } \cdot 100 \\
 \\
 & risk\% = max\ drawdown\% \\
 \\
-& mar = \frac {\ yield\%\ } {\ risk\%\ } \\
+& mar = \frac {\ return\%\ } {\ risk\%\ } \\
 \\
 & lsr = \frac {\ \sum_{1}^{days} pnl\ } {\ \sum_{1}^{days} |pnl|\ } \\
 \\
 & odds\% = 50 + \frac {\ kelly\ } {\ 2\ } \cdot 100 \\
 \\
-& daily\% = \left( 1 + \frac {\ yield\%\ } {\ 100\ } \right) ^ {\frac {\ 1\ } {\ days\ }} \cdot 100 - 100 \\
+& daily\% = \left( 1 + \frac {\ return\%\ } {\ 100\ } \right) ^ {\frac {\ 1\ } {\ days\ }} \cdot 100 - 100 \\
 \\
-& apy\% = \left( 1 + \frac {\ daily\%\ } {\ 100\ } \right) ^ {365} \cdot 100 - 100 \\
+& apr\% = \left( 1 + \frac {\ daily\%\ } {\ 100\ } \right) ^ {365} \cdot 100 - 100 \\
 \\
 & score = mar \cdot lsr \cdot odds\% \cdot daily\% \\
 \\
@@ -140,7 +143,7 @@ Two parameters here are developed exclusively by Mobius Fund: $$odds\\%$$ is ess
 There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, and $$risk\\% = 0$$. Since $$mar$$ is inherently a long-term parameter, we make an empirical adjustment in live code to account for short-term effects in Bittensor:
 ```math
 \begin{aligned}
-& mar = yield\% / max( risk\%,\ \frac {\ 5\ } {\ \sqrt { days\ }\ } )
+& mar = return\% / max( risk\%,\ \frac {\ 5\ } {\ \sqrt { days\ }\ } )
 \\
 \end{aligned}
 ```
@@ -165,18 +168,18 @@ To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic E
 
 Finally, a rolling window is applied depending on markets and asset classes. For Tao/Alpha staking, the window size is currently set at 30 days, considering the nascent and fast-moving nature of the market. For US stocks and other more matured assets, the number will be larger. The window size will be adjusted over time as the subnet evolves.
 
-We assume $$fund = 1000τ$$ as the initial capital and take slippage into account. Profit and loss are calculated daily at midnight UTC. Yield is determined by price performance of allocated subnets, plus estimated dividends from validator delegation with the default 18% take.
+We assume $$fund = 1000τ$$ as the initial capital and take slippage into account. Profit and loss are calculated daily at midnight UTC. Return is determined by price performance of allocated subnets, plus estimated dividends from validator delegation with the default 18% take.
 
 #### Performance
 
 Miners are encouraged to emphasize long-term strategies with portfolio management, in contrast to short-term trading in isolated instruments. The general goal is to consistently outperform the market by boosting alpha while reducing beta. For miners new to portfolio management, the concept of MPT and CAPM can be a good starting point in optimizing strategies and portfolios using machine learning.
 
-The stand-alone tool `Sταking/bin/simst` (Sim Stake/Strat) can be convenient for back testing strategies and tuning performance based on historical market data.
+The stand-alone tool `Investing/bin/simst` (Sim Strat) can be convenient for back testing strategies and tuning performance based on historical market data.
 
 Note that in contrast to live mining, `simst` may simulate block-level precision based on limited market data. The difference in results should not be far off especially in a long-term timeframe.
 
 ## Disclaimer
-Past performance is no guarantee of future results. The subnet does not provide financial advice of any kind. Investing carries inherent risks, including the risk of partial or total loss of capital. The subnet is not responsible for any profit or loss resulting from any strategies shared by the community.
+Past performance is no guarantee of future results. The subnet does not provide financial advice of any kind. Investing carries inherent risks, including the risk of partial or total loss of capital. The subnet is not responsible for any profit or loss resulting from any strategies shared by the Bittensor community.
 
 ## License
 This repository is licensed under the MIT License.

@@ -9,7 +9,7 @@ from .const import DAYS_FINAL
 from .simst import SimSt, asset
 
 def update():
-    init = 'Sταking/__init__.py'
+    init = 'Investing/__init__.py'
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     lv = open(f'{root}/{init}').read()
     rv = requests.get(f'{RAWGIT_ROOT}/refs/heads/main/{init}').text
@@ -44,9 +44,11 @@ def dist(st, nn):
             ab[i].append([*kk, *df['block'].map(lambda x: b - x)])
             ab[i][-2][j+2] = 0
     for i in [0, 1]: ab[-1].append([])
+    ab[-1].append(0)
     return ab
 
 def dedupe(ab):
+    dd_trigger = ab[-1][-1] or DD_TRIGGER
     dd = pd.DataFrame([], pd.Index([], name='uid'), ['dedupe'])
     for i in range(len(ab) - 1):
         da = pd.DataFrame(ab[i][0::2], columns=['uid', '', *[*zip(*ab[i])][0][0::2]]).set_index('uid').iloc[:,1:]
@@ -54,11 +56,12 @@ def dedupe(ab):
         print(da.map('{:.4f}'.format).reset_index().to_string(index=False))
         print(db.reset_index().to_string(index=False))
         for uid, di in da.iterrows():
-            du = db.loc[uid, di[(di.index != uid) & (di < DD_TRIGGER)].index]
+            du = db.loc[uid, di[(di.index != uid) & (di < dd_trigger)].index]
             dd.loc[uid] = min((du[du >= 0].min() / 7200 / DAYS_FINAL) ** DD_POWER, 1)
     for i in [0, 1]:
         print(f"{['black', 'white'][i]}list: {ab[-1][i]}")
         dd.loc[dd.index.isin(ab[-1][i])] = i
+    print(f'threshold: {dd_trigger}')
     print(dd.dropna().reset_index().to_string(index=False))
     return dd
 
