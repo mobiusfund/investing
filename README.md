@@ -79,7 +79,7 @@ pm2 start neurons/validator.py \
 
 When a strategy is filed under the `Investing/strat/` directory, it will be automatically submitted by the miner. Please see [README](https://github.com/mobiusfund/investing/tree/main/Investing/strat) for further info.
 
-A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in subnet allocation will incur slippage costs as well as staking/unstaking fees.
+A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in subnet allocation will incur [slippage](https://docs.learnbittensor.org/dynamic-tao/staking-unstaking-dtao/) costs as well as [staking/unstaking](https://github.com/opentensor/subtensor/pull/1386) fees.
 
 All strategy updates will be shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation will take place after midnight UTC.
 
