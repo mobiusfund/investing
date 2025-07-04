@@ -159,7 +159,7 @@ To limit short-term random effects, we make an empirical adjustment to $$score$$
 To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic Emission Control in live code:
 ```math
 \begin{aligned}
-& dec = \left( \frac {\ last\ active\ } {\ days + 1\ } \right) ^ {3},\ if\ days > 30 \\
+& dec = \left( \frac {\ last\ active\ } {\ days + 1\ } \right) ^ {3},\ if\ days > 15 \\
 \\
 & score = score\ *\ \left( 1 - dec \right),\ if\ dec > 0.03 \\
 \\

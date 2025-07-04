@@ -2,10 +2,7 @@
 
 import os, math, requests
 import pandas as pd
-from .const import RAWGIT_ROOT
-from .const import DD_TRIGGER, DD_POWER
-from .const import DEC_UID, DEC_DECAY, DEC_CUTOFF
-from .const import DAYS_FINAL
+from .const import *
 from .simst import SimSt, asset
 
 def update():
@@ -76,7 +73,7 @@ def score(pl, ab, da, n):
 
     sc = sc.join(da.set_index('uid')['last'], 'uid')
     dec = (sc['last'] / (sc['days'] + 1)) ** DEC_DECAY
-    sc.loc[(dec > DEC_CUTOFF) & (sc['days'] > DAYS_FINAL), 'score'] *= 1 - dec
+    sc.loc[(dec > DEC_CUTOFF) & (sc['days'] > DEC_START), 'score'] *= 1 - dec
     sc.insert(4, 'last', sc.pop('last'))
 
     sim.sc = sc[sc['uid'] < n]
