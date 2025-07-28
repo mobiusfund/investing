@@ -1,7 +1,6 @@
 <div align="center">
 
-# **Investing**
-## DeFAI powered AUM
+# Investing - Decentralized AUM
 [Dashboard](https://db.investing88.ai) • [Discord](https://discord.com/channels/799672011265015819/1358854051634221328) • [X](https://x.com/Investing88ai)
 </div>
 
@@ -16,7 +15,7 @@
 
 ## Intro
 
-Envisioned as the world's first DeFAI powered AUM, leveraging a decentralized network of both human and artificial intelligence, Investing is the Bittensor subnet with the mission to provide investment services for both retail and institutional investors.
+Envisioned as the world's first Decentralized AUM, leveraging a worldwide network of both human and artificial intelligence, Investing is the Bittensor subnet with the mission to provide investment services for both retail and institutional investors.
 
 The initial phase at launch is optimizing staking strategies in the Tao/Alpha ecosystem, by the community and for the community.
 
@@ -24,10 +23,10 @@ The resulting business model and innovations will apply across crypto and other 
 
 ## Roadmap
 
-Phase I - Live at launch: Staking strategies \
-Phase II - 3 to 6 months: Portfolio management with US stocks \
+Phase I - Live at launch: Staking strategies ✓ 04/25 \
+Phase II - 3 to 6 months: Portfolio management with US stocks ✓ 07/25 \
 Phase III - 6 months to 1 year: Multi-class asset management in global markets \
-Phase IV - 1 year and beyond: Fully realized, DeFAI powered AUM \
+Phase IV - 1 year and beyond: Fully realized, Decentralized AUM \
 In parallel - Ongoing: A frontend AUM app serving real-world investors
 
 ## Installation
@@ -79,9 +78,11 @@ pm2 start neurons/validator.py \
 
 When a strategy is filed under the `Investing/strat/` directory, it will be automatically submitted by the miner. Please see [README](https://github.com/mobiusfund/investing/tree/main/Investing/strat) for further info.
 
-A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in subnet allocation will incur [slippage](https://docs.learnbittensor.org/dynamic-tao/staking-unstaking-dtao/) costs as well as [staking/unstaking](https://github.com/opentensor/subtensor/pull/1386) fees.
+A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the file timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in asset allocation will incur [slippage](https://docs.learnbittensor.org/dynamic-tao/staking-unstaking-dtao/) costs as well as [staking/unstaking](https://github.com/opentensor/subtensor/pull/1386) fees for Tao/Alpha, and transaction fees for other assets.
 
-All strategy updates will be shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation will take place after midnight UTC.
+For US stocks, rebalancing is currently supported via two order types in a trading session: Market on Open (MOO) and Market on Close (MOC), to take advantage of maximum liquidity. Per NYSE and NASDAQ rules, only strategies submitted before 09:28 and 15:50 Eastern time will be counted.
+
+All strategy updates are shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation takes place at 04:00 UTC.
 
 One machine can run multiple miners with their corresponding strategies, with an extra argument e.g. `--axon.port 8092` added to the `pm2` command. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
@@ -159,16 +160,16 @@ To limit short-term random effects, we make an empirical adjustment to $$score$$
 To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic Emission Control in live code:
 ```math
 \begin{aligned}
-& dec = \left( \frac {\ last\ active\ } {\ days + 1\ } \right) ^ {3},\ if\ days > 15 \\
+& dec = \left( \frac {\ last\ active\ } {\ 30\ } \right) ^ {2},\ if\ days > 15 \\
 \\
-& score = score\ *\ \left( 1 - dec \right),\ if\ dec > 0.03 \\
+& score = score\ *\ \left( 1 - min( dec,\ 1 ) \right) \\
 \\
 \end{aligned}
 ```
 
-Finally, a rolling window is applied depending on markets and asset classes. For Tao/Alpha staking, the window size is currently set at 30 days, considering the nascent and fast-moving nature of the market. For US stocks and other more matured assets, the number will be larger. The window size will be adjusted over time as the subnet evolves.
+Finally, a rolling window is applied depending on markets and asset classes. The window size is currently set at 30 days for all assets. It will be adjusted over time as the subnet evolves.
 
-We assume $$fund = 1000τ$$ as the initial capital and take slippage into account. Profit and loss are calculated daily at midnight UTC. Return is determined by price performance of allocated subnets, plus estimated dividends from validator delegation with the default 18% take.
+As the initial capital, we assume $$fund = 1000\ Tao$$ for Tao/Alpha, and $$fund = 10M\ USD$$ for US stocks. Profit and loss are calculated daily at 04:00 UTC. Return is determined by price performance of allocated assets plus dividends. For Tao/Alpha, dividends are calculated from validator delegation with the default 18% take.
 
 #### Performance
 

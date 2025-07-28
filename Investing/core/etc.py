@@ -1,6 +1,8 @@
 # Copyright © 2025 Mobius Fund
 
-import os, math, requests
+import os, math
+import requests
+import contextlib
 import pandas as pd
 from .const import *
 from .simst import SimSt, asset
@@ -62,23 +64,29 @@ def dedupe(ab):
     print(dd.dropna().reset_index().to_string(index=False))
     return dd
 
-def score(pl, ab, da, n):
+def score(pl, ab, da, ra, n):
     sim = SimSt()
     sim.pl = pl
     sim.pl2sc()
 
-    sc = sim.sc.join(dedupe(ab), 'uid')
+    with contextlib.redirect_stdout(None):
+        sc = sim.sc.join(dedupe(ab), 'uid')
     sc.loc[~sc['dedupe'].isna(), 'score'] *= sc['dedupe']
     sc.insert(7, 'dedupe', sc.pop('dedupe').round(4))
 
     sc = sc.join(da.set_index('uid')['last'], 'uid')
-    dec = (sc['last'] / (sc['days'] + 1)) ** DEC_DECAY
-    sc.loc[(dec > DEC_CUTOFF) & (sc['days'] > DEC_START), 'score'] *= 1 - dec
+    dec1 = (sc['last'] / DEC1_CLIFF) ** DEC1_DECAY
+    sc.loc[sc['days'] > DEC1_START, 'score'] *= 1 - dec1.clip(upper=1)
     sc.insert(4, 'last', sc.pop('last'))
 
     sim.sc = sc[sc['uid'] < n]
     print(sim.sc2pct().to_string(index=False))
     sc = sim.sc
+
+    scz = sc['score'].sum()
+    for a in range(len(ra)):
+        sca = sc[sc['a'] == a]['score'].sum()
+        if sca: sc.loc[sc['a'] == a, 'score'] *= ra[a] * scz / sca
 
     score = [sc[sc['uid'] == i]['score'].iat[0] if i in sc['uid'].values else 0 for i in range(n)]
     dec = (sc['last'].sum() / (sc['days'] + 1).sum()) ** DEC_DECAY

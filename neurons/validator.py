@@ -68,10 +68,11 @@ class Validator(BaseValidatorNeuron):
             pl = api.pnl()
             ab = api.dist()
             da = api.days()
+            ra = api.ratio()
             if not len(pl): return
             bt.logging.info('Calculating score...')
-            self.scores, uid, dec = etc.score(pl, ab, da, self.metagraph.n)
-            bt.logging.info(f'DEC: {dec}, score {uid}: {self.scores[uid]}')
+            self.scores, uid, dec = etc.score(pl, ab, da, ra, self.metagraph.n)
+            bt.logging.info(f'DEC: {dec}, score {uid}: {self.scores[uid]}, asset ratio: {ra}')
         except: pass
 
 
