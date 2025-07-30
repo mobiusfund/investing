@@ -80,7 +80,7 @@ When a strategy is filed under the `Investing/strat/` directory, it will be auto
 
 A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the file timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in asset allocation will incur [slippage](https://docs.learnbittensor.org/dynamic-tao/staking-unstaking-dtao/) costs as well as [staking/unstaking](https://github.com/opentensor/subtensor/pull/1386) fees for Tao/Alpha, and transaction fees for other assets.
 
-For US stocks, rebalancing is currently supported via two order types in a trading session: Market on Open (MOO) and Market on Close (MOC), to take advantage of maximum liquidity. Per NYSE and NASDAQ rules, only strategies submitted before 09:28 and 15:50 Eastern time will be counted.
+For US stocks, rebalancing is currently supported via two order types in a trading session: Market on Open (MOO) and Market on Close (MOC), to take advantage of maximum liquidity. Per NYSE and NASDAQ rules, only strategies submitted before 09:28 and 15:50 Eastern time will be counted. Currently supported [ticker symbols](https://api.investing88.ai/assets) are generally large cap assets.
 
 All strategy updates are shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation takes place at 04:00 UTC.
 
@@ -141,10 +141,10 @@ A simple number $$score$$ is used to evaluate strategies, where:
 
 Two parameters here are developed exclusively by Mobius Fund: $$odds\\%$$ is essentially winning odds normalized using Kelly's equation, with the profit/loss ratio normalized to 1 while the Kelly factor remaining the same; $$lsr$$ is >0.99 correlated to Sharpe Ratio and mathematically more sound. Empirically $$lsr \approx \frac {\ sharpe\ ratio\ } {\ 11\ }$$.
 
-There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, and $$risk\\% = 0$$. Since $$mar$$ is inherently a long-term parameter, we make an empirical adjustment in live code to account for short-term effects in Bittensor:
+There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, and $$risk\\% = 0$$. Since $$mar$$ is inherently a long-term parameter, we make an empirical adjustment in live code to account for short-term effects in Bittensor, where $$R_{init} = 5$$ for Tao/Alpha, and $$R_{init} = 1$$ for US stocks:
 ```math
 \begin{aligned}
-& mar = return\% / max( risk\%,\ \frac {\ 5\ } {\ \sqrt { days\ }\ } )
+& mar = return\% / max( risk\%,\ \frac {\ R_{init}\ } {\ \sqrt { days\ }\ } )
 \\
 \end{aligned}
 ```

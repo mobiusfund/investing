@@ -48,15 +48,17 @@ def dist(st, nn):
 
 def dedupe(ab):
     dd_trigger = ab[-1][-1] or DD_TRIGGER
+    bb = [7200] + [86400] * (len(ab) - 2)
     dd = pd.DataFrame([], pd.Index([], name='uid'), ['dedupe'])
     for i in range(len(ab) - 1):
+        if not ab[i]: continue
         da = pd.DataFrame(ab[i][0::2], columns=['uid', '', *[*zip(*ab[i])][0][0::2]]).set_index('uid').iloc[:,1:]
         db = pd.DataFrame(ab[i][1::2], columns=['uid', '', *[*zip(*ab[i])][0][1::2]]).set_index('uid').iloc[:,1:]
         print(da.map('{:.4f}'.format).reset_index().to_string(index=False))
         print(db.reset_index().to_string(index=False))
         for uid, di in da.iterrows():
             du = db.loc[uid, di[(di.index != uid) & (di < dd_trigger)].index]
-            dd.loc[uid] = min((du[du >= 0].min() / 7200 / DAYS_FINAL) ** DD_POWER, 1)
+            dd.loc[uid] = min((du[du >= 0].min() / bb[i] / DAYS_FINAL) ** DD_POWER, 1)
     for i in [0, 1]:
         print(f"{['black', 'white'][i]}list: {ab[-1][i]}")
         dd.loc[dd.index.isin(ab[-1][i])] = i
@@ -68,16 +70,24 @@ def score(pl, ab, da, ra, n):
     sim = SimSt()
     sim.pl = pl
     sim.pl2sc()
+    sc = sim.sc
+
+    oc = pd.DataFrame(columns=['uid', 'c'])
+    for uid, dd in pl.groupby(pl.columns[0]):
+        oc.loc[len(oc)] = uid, int(dd['swap_close'].iat[-1] >= dd['swap_open'].iat[0])
+    sc = sc.join(oc.set_index('uid'), 'uid')
+    sc['score'] *= sc['c']
+    sc.insert(7, 'c', sc.pop('c'))
 
     with contextlib.redirect_stdout(None):
-        sc = sim.sc.join(dedupe(ab), 'uid')
+        sc = sc.join(dedupe(ab), 'uid')
     sc.loc[~sc['dedupe'].isna(), 'score'] *= sc['dedupe']
-    sc.insert(7, 'dedupe', sc.pop('dedupe').round(4))
+    sc.insert(8, 'dedupe', sc.pop('dedupe').round(4))
 
     sc = sc.join(da.set_index('uid')['last'], 'uid')
     dec1 = (sc['last'] / DEC1_CLIFF) ** DEC1_DECAY
-    sc.loc[sc['days'] > DEC1_START, 'score'] *= 1 - dec1.clip(upper=1)
-    sc.insert(4, 'last', sc.pop('last'))
+    sc.loc[sc['days'] > DEC1_START, 'score'] *= 1 - dec1.clip(0, 1)
+    sc.insert(5, 'last', sc.pop('last'))
 
     sim.sc = sc[sc['uid'] < n]
     print(sim.sc2pct().to_string(index=False))
