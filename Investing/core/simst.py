@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.0.0
+simst - Sim Strat, version 1.0.1
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -132,7 +132,7 @@ def initfund(self):
     if not len(st): return pd.DataFrame()
     notin = 'init' not in st
     anum0 = {}
-    st['strat'] = st['strat'].str.replace(r'''[^{'\w":.,}\[\]=+-]''', '', regex=True)
+    st['strat'] = st['strat'].str.replace(r'''[^{'\w":.,}\[\]\*=+-]''', '', regex=True)
     fi = pd.DataFrame(columns=[*kk, 'date', 'block', 'init', 'fund', 'strat', 'a'])
     for _, di in st.sort_values(['date', 'block']).iterrows():
         uid = di['uid']
@@ -143,7 +143,7 @@ def initfund(self):
         if anum not in range(an): continue
         if uid not in anum0: anum0[uid] = anum
         if anum != anum0[uid]: continue
-        try: asum = sum([abs(strat[k]) for k in strat if k not in ['_', '=', '-+']])
+        try: asum = sum([abs(strat[k]) for k in strat if k not in ['_', '*', '=', '-+']])
         except: continue
         if asum > 1: continue
         bn = self.db[anum]
@@ -305,12 +305,14 @@ def pldaily1(self, date, a=1):
         fb = []
         if block == bk0 and gg[:2] in fa.index:
             fb = fa.loc[[gg[:2]]]
-            fb = fb[fb['block'] < bk0 - -STK_MOO].iloc[:,1:]
-            fb = fb.drop_duplicates('netuid', keep='last')
+            fb = fb[fb['block'] < bk0 - -STK_MOO]
+            fb['init'] = int(1 in fb['init'].values)
+            if len(fb): fb = fb[fb['block'] == fb['block'].iat[-1]].iloc[:,1:]
         if block == bk1 and gg[:2] in fa.index:
             fb = fa.loc[[gg[:2]]]
-            fb = fb[(bk0 < fb['block']) & (fb['block'] < bk1 - -STK_MOC)].iloc[:,1:]
-            fb = fb.drop_duplicates('netuid', keep='last')
+            fb = fb[(bk0 - -STK_MOO <= fb['block']) & (fb['block'] < bk1 - -STK_MOC)]
+            fb['init'] = int(1 in fb['init'].values)
+            if len(fb): fb = fb[fb['block'] == fb['block'].iat[-1]].iloc[:,1:]
 
         swap = dd.drop_duplicates(kn)['swap'].sum()
         for i in dd.index:
@@ -375,6 +377,7 @@ def pltotal(self, dh, date, a, b=[]):
         pl.loc[len(pl)] = *gg, date, a, *[a for z in zip(*loc) for a in z]
 
 def plfinal(self):
+    if not hasattr(self, '_hl'): return
     self.hl = self._hl
     self.ba = self.hl[self.hl['alpha_close'].abs() > 1e-6][self.ba.columns]
     self.shappend(self.sh)

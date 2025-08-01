@@ -73,7 +73,7 @@ class Validator(BaseValidatorNeuron):
             bt.logging.info('Calculating score...')
             self.scores, uid, dec = etc.score(pl, ab, da, ra, self.metagraph.n)
             bt.logging.info(f'DEC: {dec}, score {uid}: {self.scores[uid]}, asset ratio: {ra}')
-        except: pass
+        except Exception as e: bt.logging.error(e)
 
 
 # The main function parses the configuration and runs the validator.

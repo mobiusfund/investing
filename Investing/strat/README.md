@@ -10,6 +10,7 @@
 - `'_':1` denotes US stocks where all other keys should be case-sensitive strings
 - A special key `''` (empty string) and unsupported ticker symbols count as USD/cash
 - Shorting is supported with negative allocation values for US stocks
+- Special keys `'*'`, `'='`, and `'-+'` are reserved for new features in the future
 - The miner will automatically submit a strategy based on the file timestamp
 
 #### Sim Strat
