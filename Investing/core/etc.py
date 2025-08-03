@@ -86,7 +86,7 @@ def score(pl, ab, da, ra, n):
 
     sc = sc.join(da.set_index('uid')['last'], 'uid')
     dec1 = (sc['last'] / DEC1_CLIFF) ** DEC1_DECAY
-    sc.loc[sc['days'] > DEC1_START, 'score'] *= 1 - dec1.clip(0, 1)
+    sc.loc[~sc['last'].isna() & (sc['days'] > DEC1_START), 'score'] *= 1 - dec1.clip(0, 1)
     sc.insert(5, 'last', sc.pop('last'))
 
     sim.sc = sc[sc['uid'] < n]

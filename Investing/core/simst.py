@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.0.1
+simst - Sim Strat, version 1.1.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -80,7 +80,7 @@ def ddclean1(dd, b):
     dd = pd.concat([dd[dd['ochl'] != 'day'], b[~b['block'].isin(dd['block'])]])
     dd = dd.sort_values('block').reset_index(drop=True)
     dd.loc[dd['netuid'] != netuid, dd.columns[3:-1]] = float('nan')
-    dd.loc[[0, len(dd)-1], 'price'] = day[['open', 'close']].iloc[-1]
+    dd.loc[[0, len(dd)-1], 'price'] = day[['open', 'close']].iloc[-1].values
     dd.iloc[:,3:-1] = dd.iloc[:,3:-1].astype(float).interpolate().bfill().ffill()
     dd['netuid'] = netuid
     return dd
@@ -299,7 +299,6 @@ def pldaily1(self, date, a=1):
         dd['value'] = dd['alpha'] * dd['price']
         short = dd[dd['alpha'] < 0]['netuid'].map(lambda n: sh.loc[(uid, hk, n)]['price'])
         if len(short): dd.loc[dd['alpha'] < 0, 'value'] -= dd['alpha'] * short * 2
-        dd.loc[(dd['alpha'] < 0) & (dd['value'] < 0), 'netuid'].map(lambda n: sh.drop((uid, hk, n), inplace=True))
         dd.loc[(dd['alpha'] < 0) & (dd['value'] < 0), ['alpha', 'value']] = 0
         dd['swap'] = dd['value']
         fb = []
@@ -307,12 +306,19 @@ def pldaily1(self, date, a=1):
             fb = fa.loc[[gg[:2]]]
             fb = fb[fb['block'] < bk0 - -STK_MOO]
             fb['init'] = int(1 in fb['init'].values)
-            if len(fb): fb = fb[fb['block'] == fb['block'].iat[-1]].iloc[:,1:]
+            if len(fb): fb = fb[fb['block'] == fb['block'].iat[-1]]
         if block == bk1 and gg[:2] in fa.index:
             fb = fa.loc[[gg[:2]]]
             fb = fb[(bk0 - -STK_MOO <= fb['block']) & (fb['block'] < bk1 - -STK_MOC)]
             fb['init'] = int(1 in fb['init'].values)
-            if len(fb): fb = fb[fb['block'] == fb['block'].iat[-1]].iloc[:,1:]
+            if len(fb): fb = fb[fb['block'] == fb['block'].iat[-1]]
+        if block == bk1 and gg[:2] in fa.index and not len(fb):
+            fb = fa.loc[[gg[:2]]]
+            fb = fb[fb['block'] >= bk1 - -STK_MOC]
+            fb['init'] = int(1 in fb['init'].values)
+            if len(fb): fb = fb[fb['block'] == fb['block'].iat[-1]][-1:]
+            if 1 in fb['init'].values: fb['netuid'], fb['alloc'] = '', 1
+            else: fb = []
 
         swap = dd.drop_duplicates(kn)['swap'].sum()
         for i in dd.index:
@@ -320,17 +326,16 @@ def pldaily1(self, date, a=1):
             netuid = di['netuid']
             key = uid, hk, netuid
             if len(fb):
-                try: init, fund, alloc = fb.set_index('netuid').loc[netuid]
-                except: init, fund, alloc = 0, 0, 0
-                if not init and fund and alloc: self.stupdate(gg, swap)
-                diffs = (init * fund or swap) * alloc - di['swap'] * [-1, 1][int(di['alpha'] >= 0)]
-                diffa = diffs / di['price'] if netuid else diffs
-                di['alpha'] += diffa - abs(diffa) * STK_FEE / di['price'] * (alloc >= 0) * bool(netuid)
-                short = di['price']  + abs(diffa) * STK_FEE / di['alpha'] if alloc <  0 else 0
+                try: blk, init, fund, alloc = fb.set_index('netuid').loc[netuid]
+                except: blk, init, fund, alloc = 0, 0, 0, 0
+                if not init and fund and alloc: self.stupdate((*gg[:2], blk), swap)
+                alpha = (init * fund or swap) * alloc / di['price']
+                diffa = alpha - di['alpha']
+                di['alpha'] = alpha - abs(diffa) * STK_FEE / di['price'] * (alloc >= 0) * bool(netuid)
+                short = di['price'] + abs(diffa) * STK_FEE / di['alpha'] if alloc <  0 else 0
                 if di['alpha'] < 0 and alloc >= 0: di['alpha'] = 0
                 if di['alpha'] > 0 and alloc <  0: di['alpha'] = 0
                 if di['alpha'] < 0: sh.loc[key] = date, block, short
-                elif key in sh.index: sh.drop(key, inplace=True)
                 dd.loc[i,'alpha'] = di['alpha']
                 dd.loc[i,'value'] = di['alpha'] * (di['price'] - short * 2)
                 dd.loc[i,'swap'] = di['alpha'] * (di['price'] - short * 2)
