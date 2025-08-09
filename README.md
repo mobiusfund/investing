@@ -149,10 +149,12 @@ There are two edge cases when a strategy is getting started: All days are loss d
 \end{aligned}
 ```
 
-To limit short-term random effects, we make an empirical adjustment to $$score$$ in live code:
+To reduce short-term random effects, we clip daily profit outliers in live code where $$n = 2$$, and limit a new strategy's score:
 ```math
 \begin{aligned}
-& score = score\ *\ \frac {\ days\ } {\ 30\ },\ if\ days < 30
+& top\ \ n\ profit\% = top\ \ (n+1)th\ profit\% \\
+\\
+& score = score\ *\ \left( \frac {\ days\ } {\ 30\ } \right) ^ \text{1/2},\ if\ days < 30 \\
 \\
 \end{aligned}
 ```
@@ -160,7 +162,7 @@ To limit short-term random effects, we make an empirical adjustment to $$score$$
 To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic Emission Control in live code:
 ```math
 \begin{aligned}
-& dec = \left( \frac {\ last\ active\ } {\ 30\ } \right) ^ {2},\ if\ days > 15 \\
+& dec = \left( \frac {\ last\ active\ } {\ 30\ } \right) ^ {2},\ if\ days > 7 \\
 \\
 & score = score\ *\ \left( 1 - min( dec,\ 1 ) \right) \\
 \\

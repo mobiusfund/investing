@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.1.0
+simst - Sim Strat, version 1.2.0
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -10,16 +10,30 @@ Usage:  simst strategies_csv [option...]
 Options:
         -f initial_fund
         -e end_date
+        -c clip_outliers
         -w window_size
         -h
--f, --fund      initial fund that overrides the fund column in the csv file
+-f, --fund      initial fund, overrides the fund column in the csv file
 -e, --end       end date that differs from yesterday
--w, --win       score rolling window size in days (default 30)
+-c, --clip      clip daily profit outliers, default 2 days
+-w, --win       score rolling window size, default 30 days
 -h, --help      print this message and exit
 
 Examples:
         simst ../strat/simst.csv
-        simst /tmp/test.csv -f 5000 -e 2025-06-30 -w 365
+        simst /tmp/test.csv -f 5000 -e 2025-06-30 -c 0 -w 365
+
+Environment variables:
+        # no db fetching
+        SIMST_NO_FETCH
+        # replace const.py
+        SIMST_VALI_TAKE
+        SIMST_CLIP_OUTLIERS
+        SIMST_CLIP_DEFAULT
+        SIMST_RISK_INIT_DTAO
+        SIMST_RISK_INIT_STK
+        SIMST_WIN_SIZE_DTAO
+        SIMST_WIN_SIZE_STK
 
 Notes: The strategies csv file has 6 effective columns: uid, date, block,
 init, fund, strat. Other columns are allowed but ignored. A strategy is
@@ -28,7 +42,8 @@ only effective once and ignored by subsequent rebalancing.
 
 Block-level precision may be simulated using Pandas 'interpolate()', if a
 given block is not found in available market data. By default, simst comes
-with an auto updated market database with hourly precision.
+with an auto updated market database with hourly precision for dtao, and
+5-minute precision for stocks.
 
 This tool is a part of Bittensor subnet 88 - Investing, the world's first
 Decentralized AUM. Please visit:
@@ -62,6 +77,7 @@ class SimSt():
         self.sc = pd.read_csv(f'{cd}/db/score.col')
 
 def ddclean(dd):
+    if not len(dd): return dd
     dd = dd.drop_duplicates(['block', 'ochl'], keep='last')
     dd.iloc[:,1:5] = dd.iloc[:,1:5].astype(int)
     dd = dd.sort_values('block').reset_index(drop=True)
@@ -74,9 +90,9 @@ def ddclean(dd):
 
 def ddclean1(dd, b):
     if not len(dd): return dd
+    dd = dd.drop_duplicates(['block', 'ochl'], keep='last')
     netuid = dd['netuid'].iat[0]
     day = dd[dd['ochl'] == 'day']
-    dd = dd.drop_duplicates(['block', 'ochl'], keep='last')
     dd = pd.concat([dd[dd['ochl'] != 'day'], b[~b['block'].isin(dd['block'])]])
     dd = dd.sort_values('block').reset_index(drop=True)
     dd.loc[dd['netuid'] != netuid, dd.columns[3:-1]] = float('nan')
@@ -86,8 +102,8 @@ def ddclean1(dd, b):
     return dd
 
 def fetchda(self, a):
+    if a not in asst(self.st): return pd.DataFrame()
     st = self.st
-    if a not in asst(st): return pd.DataFrame()
     date = st['date'].min()
     db = f'{cd}/db/daily{a or ""}.db'
     conn = sql.create_engine(f'sqlite:///{db}').connect()
@@ -110,8 +126,8 @@ def fetchda(self, a):
     return bn[bn['date'] >= date]
 
 def fetchdb(self):
+    if not len(self.st): return [pd.DataFrame()] * an
     st = self.st
-    if not len(st): return [pd.DataFrame()] * an
     fd = [self.fetchda(a) for a in range(an)]
     if len(fd[1]): fd[1].insert(3, 'price', fd[1]['open'])
     for da in ['split', 'dividend'] if len(fd[1]) else []:
@@ -128,8 +144,8 @@ def fetchdb(self):
     return fd
 
 def initfund(self):
+    if not len(self.st): return pd.DataFrame()
     st = self.st
-    if not len(st): return pd.DataFrame()
     notin = 'init' not in st
     anum0 = {}
     st['strat'] = st['strat'].str.replace(r'''[^{'\w":.,}\[\]\*=+-]''', '', regex=True)
@@ -395,12 +411,22 @@ def pl2sc(self):
     pl = pl.sort_values([*pl.columns[:3]])
     for gg, dd in pl.groupby([*pl.columns[:2]]) if len(pl) else []:
         date, a, days = dd['date'].iat[-1], dd['asset'].iat[0], len(dd)
-        dd = dd[-self.win_size[a]:].copy()
+        dd = dd[-self.win_size[a]:].reset_index(drop=True)
         init = dd['swap_open'].iat[0]
         dd['pnl'] = dd['swap_close'].diff()
         dd['pnl%'] = dd['pnl'] / dd['swap_close'].shift() * 100
         dd['pnl'].iat[0] = dd['swap_close'].iat[0] - init
         dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
+
+        itop = dd[dd['pnl%'] > 0].sort_values('pnl%')[::-1][:self.clip_outliers + 1].index
+        if len(itop) == 0: clip = 0
+        elif len(itop) == self.clip_outliers + 1: clip = dd['pnl%'][itop[-1]]
+        else: clip = min(self.clip_default, dd['pnl%'][itop[-1]])
+        dd.loc[itop, 'pnl%'] = clip
+        for i in itop:
+            open = dd['swap_close'][i-1] if i else init
+            dd.loc[i:, 'swap_close'] -= dd['swap_close'][i] - open * (1 + clip / 100)
+            dd.loc[i, 'pnl'] = open * clip / 100
         sc.loc[len(sc)] = *gg, date, a, days, *score(dd, self.risk_init[a])[1:]
     #sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
     sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= (sc['days'] / DAYS_FINAL) ** DAYS_DELAY
@@ -476,6 +502,7 @@ def args():
     parser.add_argument('csv', metavar='strategies_csv')
     parser.add_argument('-f', '--fund', default=0, type=float)
     parser.add_argument('-e', '--end', default='')
+    parser.add_argument('-c', '--clip', default=-1, type=int)
     parser.add_argument('-w', '--win', default=0, type=int)
     parser.add_argument('-h', '--help', action='store_true')
 
@@ -485,12 +512,13 @@ def args():
     if not os.path.isfile(csv) or not os.access(csv, os.R_OK):
         print(f"simst: error: unable to read file '{a.csv}'", file=sys.stderr)
         exit(1)
-    return csv, a.fund, a.end, a.win
+    return csv, a.fund, a.end, a.clip, a.win
 
 def main():
-    csv, fund, end, win = args()
+    csv, fund, end, clip, win = args()
     sim = SimSt(pd.read_csv(csv))
     if fund: sim.fi['fund'] = fund
+    if clip >= 0: sim.clip_outliers = clip
     if win: sim.win_size = [win] * an
     if end:
         sim.db[:an] = [bn[bn['date'] <= end] if len(bn) else bn for bn in sim.db[:an]]
@@ -503,7 +531,7 @@ def main():
         print(', ' if date < dates[-1] else '.\n', end='', flush=True)
     sim.pl2sc()
     if not len(sim.sc): return
-    print(f'rolling window days: {sim.win_size}')
+    print(f'clip outlier days: {sim.clip_outliers}, rolling window days: {sim.win_size}')
     print(sim.sc2pct().to_string(index=False))
 
 # reserved for live api server
@@ -531,6 +559,8 @@ SimSt.scappend = scappend
 
 SimSt.no_fetch = bool(os.getenv('SIMST_NO_FETCH', False))
 SimSt.vali_take = float(os.getenv('SIMST_VALI_TAKE', VALI_TAKE))
+SimSt.clip_outliers = int(os.getenv('SIMST_CLIP_OUTLIERS', CLIP_OUTLIERS))
+SimSt.clip_default = int(os.getenv('SIMST_CLIP_DEFAULT', CLIP_DEFAULT))
 SimSt.risk_init = []
 SimSt.risk_init += [float(os.getenv('SIMST_RISK_INIT_DTAO', RISK_INIT_DTAO))]
 SimSt.risk_init += [float(os.getenv('SIMST_RISK_INIT_STK', RISK_INIT_STK))]
