@@ -1,0 +1,7 @@
+cd `dirname $(realpath $0)`
+cd ..
+. ../.venv/bin/activate &>/dev/null
+python=python
+test `which python3` && python=python3
+test `which python` && python=python
+$python -c 'import core.api as api, core.etc as etc; etc.score(api.pnl(), api.dist(), api.days(), api.ratio())'

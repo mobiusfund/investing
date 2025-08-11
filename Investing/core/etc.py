@@ -66,7 +66,7 @@ def dedupe(ab):
     print(dd.dropna().reset_index().to_string(index=False))
     return dd
 
-def score(pl, ab, da, ra, n):
+def score(pl, ab, da, ra, n=256):
     sim = SimSt()
     sim.pl = pl
     sim.pl2sc()
@@ -89,10 +89,6 @@ def score(pl, ab, da, ra, n):
     sc.loc[~sc['last'].isna() & (sc['days'] > DEC1_START), 'score'] *= 1 - dec1.clip(0, 1)
     sc.insert(5, 'last', sc.pop('last'))
 
-    sim.sc = sc[sc['uid'] < n]
-    print(sim.sc2pct().to_string(index=False))
-    sc = sim.sc
-
     scz = sc['score'].sum()
     for a in range(len(ra)):
         sca = sc[sc['a'] == a]['score'].sum()
@@ -102,5 +98,9 @@ def score(pl, ab, da, ra, n):
     dec = (sc['last'].sum() / (sc['days'] + 1).sum()) ** DEC_DECAY
     if dec > DEC_CUTOFF: score[DEC_UID] = sum(score) * dec / (1 - dec)
     if not any(score): score[DEC_UID] = 1
+
+    sc['hotkey'] = sc['hotkey'].map(lambda x: f'{x[:6]}...{x[-6:]}')
+    sim.sc = sc[sc['uid'] < n].sort_values(['score', 'return%'])[::-1]
+    print(sim.sc2pct().to_string(index=False).replace(' swap', 'total'))
 
     return score, DEC_UID, dec

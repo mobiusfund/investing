@@ -58,7 +58,7 @@ class Validator(BaseValidatorNeuron):
         # TODO(developer): Rewrite this function based on your protocol definition.
         return await forward(self)
 
-    def score(self, x):
+    def score(self, _):
         time.sleep(60)
         while True:
             if int(time.strftime('%M')) in [25, 55]: break

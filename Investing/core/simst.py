@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.2.0
+simst - Sim Strat, version 1.2.1
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -418,12 +418,12 @@ def pl2sc(self):
         dd['pnl'].iat[0] = dd['swap_close'].iat[0] - init
         dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
 
-        itop = dd[dd['pnl%'] > 0].sort_values('pnl%')[::-1][:self.clip_outliers + 1].index
-        if len(itop) == 0: clip = 0
-        elif len(itop) == self.clip_outliers + 1: clip = dd['pnl%'][itop[-1]]
-        else: clip = min(self.clip_default, dd['pnl%'][itop[-1]])
-        dd.loc[itop, 'pnl%'] = clip
-        for i in itop:
+        ii = dd[dd['pnl%'] > 0].sort_values('pnl%')[::-1][:self.clip_outliers + 1].index
+        if len(ii) == 0: clip = 0
+        elif len(ii) == self.clip_outliers + 1: clip = dd['pnl%'][ii[-1]]
+        else: clip = min(self.clip_default, dd['pnl%'][ii[-1]])
+        dd.loc[ii, 'pnl%'] = clip
+        for i in ii:
             open = dd['swap_close'][i-1] if i else init
             dd.loc[i:, 'swap_close'] -= dd['swap_close'][i] - open * (1 + clip / 100)
             dd.loc[i, 'pnl'] = open * clip / 100
