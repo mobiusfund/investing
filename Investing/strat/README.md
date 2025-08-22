@@ -12,6 +12,7 @@
 - Shorting is supported with negative allocation values for US stocks
 - Special keys `'*'`, `'='`, and `'-+'` are reserved for new features in the future
 - The miner will automatically submit a strategy based on the file timestamp
+- Switching between asset classes is not possible once a strategy is submitted
 
 #### Sim Strat
 

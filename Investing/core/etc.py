@@ -89,6 +89,10 @@ def score(pl, ab, da, ra, n=256):
     sc.loc[~sc['last'].isna() & (sc['days'] > DEC1_START), 'score'] *= 1 - dec1.clip(0, 1)
     sc.insert(5, 'last', sc.pop('last'))
 
+    sc = sc.join(da.set_index('uid')['cash'], 'uid')
+    sc['score'] *= ((1 - sc['cash']) ** CASH_DECAY).clip(CASH_RESIDUE, 1)
+    sc.insert(6, 'cash', sc.pop('cash').round(4))
+
     scz = sc['score'].sum()
     for a in range(len(ra)):
         sca = sc[sc['a'] == a]['score'].sum()
@@ -101,6 +105,6 @@ def score(pl, ab, da, ra, n=256):
 
     sc['hotkey'] = sc['hotkey'].map(lambda x: f'{x[:6]}...{x[-6:]}')
     sim.sc = sc[sc['uid'] < n].sort_values(['score', 'return%'])[::-1]
-    print(sim.sc2pct().to_string(index=False).replace(' swap', 'total'))
+    print(sim.sc2pct().to_string(index=False).replace(' swap', ' clip'))
 
     return score, DEC_UID, dec
