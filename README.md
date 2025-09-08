@@ -88,6 +88,8 @@ All strategy updates are shown on the [dashboard](https://db.investing88.ai) imm
 
 One machine can run multiple miners with their corresponding strategies, with an extra argument e.g. `--axon.port 8092` added to the `pm2` command. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
+To curb UID spam, each miner requires a certain amount of alpha token stake. The total required stake is reflected on the coldkey.
+
 A newly registered miner goes live on the dashboard after day 1, with an immunity period of 3 days.
 
 #### Testnet
@@ -151,7 +153,7 @@ There are two edge cases when a strategy is getting started: All days are loss d
 \end{aligned}
 ```
 
-To reduce short-term random effects, we clip daily profit outliers in live code where $$N = 2$$, and limit a new strategy's score:
+To reduce short-term random effects, we clip daily profit outliers in live code where $$N = 2$$, and limit a new miner's score:
 ```math
 \begin{aligned}
 & top\ N\ profit\% = top\ (N\text{+}1) ^ {th}\ profit\% \\
