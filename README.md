@@ -158,7 +158,7 @@ To reduce short-term random effects, we clip daily profit outliers in live code 
 \begin{aligned}
 & top\ N\ profit\% = top\ (N\text{+}1) ^ {th}\ profit\% \\
 \\
-& score = score\ *\ \left( \frac {\ days\ } {\ 30\ } \right) ^ \text{1/2},\ if\ days < 30 \\
+& score = score\ *\ \frac {\ days\ } {\ 30\ },\ if\ days < 30 \\
 \\
 \end{aligned}
 ```

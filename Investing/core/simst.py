@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.2.1
+simst - Sim Strat, version 1.3.1
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -71,7 +71,7 @@ class SimSt():
         self.rv = self.db[0][:0]
         self.fi = self.initfund()
         self.sh = pd.DataFrame(columns=[*kk, 'date', 'netuid', 'block', 'price'])
-        self.ba = pd.DataFrame(columns=[*kk, 'date', 'netuid', 'block_close', 'alpha_close'])
+        self.ba = pd.DataFrame(columns=[*kk, 'date', 'netuid', 'block_close', 'alpha_close', 'swap_close'])
         self.hl = pd.read_csv(f'{cd}/db/ochl.col')
         self.pl = pd.read_csv(f'{cd}/db/pnl.col')
         self.sc = pd.read_csv(f'{cd}/db/score.col')
@@ -86,6 +86,7 @@ def ddclean(dd):
     dd = dd.drop(dd[dd['ochl'] == 'high'].sort_values('price').index[:-1])
     dd = dd.drop(dd[dd['ochl'] == 'low'].sort_values('price').index[1:])
     dd = dd.drop(dd[dd['ochl'] == 'c'].index[:-1])
+    dd['ochl'] = dd['ochl'].str.replace('hour', 'time')
     return dd
 
 def ddclean1(dd, b):
@@ -211,7 +212,7 @@ def pldaily(self, date, a=0):
         dd = ddclean(dn[dn['netuid'] == netuid])
         dd = dd[(dd['ochl'] != 'rv') | dd['block'].isin(blk)]
         if not len(dd): continue
-        try: block0, alpha0 = ba.loc[key].iloc[-2:]
+        try: block0, alpha0 = ba.loc[key].iloc[-3:-1]
         except: block0, alpha0 = dd['block'].iat[0], 0.0
         blocks = dd['block'].diff()
         blocks.iat[0] = dd['block'].iat[0] - block0
@@ -229,6 +230,10 @@ def pldaily(self, date, a=0):
         dd.insert(0, 'hotkey', hk)
         dd.insert(0, 'uid', uid)
         dg = pd.concat([dg, dd])
+
+    ndl = ba.index.droplevel
+    for key in ba[ndl([1,2]).isin(dg['uid']) & ~ndl([0,1]).isin(dg['netuid'])].index if len(dg) else []:
+        alpha0k[(*key[:2], 0)] += ba.loc[key].iat[-1]
 
     dh = pd.DataFrame()
     for gg, dd in dg.groupby(kb) if len(dg) else []:
@@ -286,7 +291,7 @@ def pldaily1(self, date, a=1):
         dd = ddclean1(dn[dn['netuid'] == netuid], ben)
         if netuid == '': dd = one.copy()
         if not len(dd): continue
-        try: alpha0 = ba.loc[key].iat[-1]
+        try: alpha0 = ba.loc[key].iat[-2]
         except: alpha0 = 0.0
         try: spli, spl2 = spl[spl['netuid'] == netuid][['from', 'to']].iloc[-1]
         except: spli, spl2 = 0, 0
@@ -306,6 +311,10 @@ def pldaily1(self, date, a=1):
         dd.insert(0, 'hotkey', hk)
         dd.insert(0, 'uid', uid)
         dg = pd.concat([dg, dd])
+
+    ndl = ba.index.droplevel
+    for key in ba[ndl([1,2]).isin(dg['uid']) & ~ndl([0,1]).isin(dg['netuid'])].index if len(dg) else []:
+        alpha0k[(*key[:2], '')] += ba.loc[key].iat[-1]
 
     dh = pd.DataFrame()
     for gg, dd in dg.groupby(kb) if len(dg) else []:
@@ -387,7 +396,7 @@ def pltotal(self, dh, date, a, b=[]):
         if dd['init'].any():
             dd.loc[dd['init'] > 0, ['value', 'swap']] = dd['init']
             dd = dd[dd['block'] >= dd[dd['init'] > 0]['block'].iat[0]]
-        if not a: dd = dd[dd['ochl'].isin(['o', 'c', 'hour', 'rv'])]
+        if not a: dd = dd[dd['ochl'].isin(['o', 'c', 'time', 'rv'])]
         if len(b): dd = dd[dd['block'].isin(b['block'])]
         dd = dd.drop_duplicates(['block', 'netuid'])
         dd = dd[kb + col[-2:]].groupby(kb).sum().reset_index()
@@ -474,7 +483,7 @@ def score(dd, risk_init=1):
     value = dd['value_close'].iat[-1]
     swap = dd['swap_close'].iat[-1]
     init = dd['swap_open'].iat[0]
-    gain = (swap - init) / init * 100
+    gain = max(swap - init, -init) / init * 100
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apr = ((1 + daily / 100) ** 365 - 1) * 100
