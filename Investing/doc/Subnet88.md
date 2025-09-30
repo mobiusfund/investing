@@ -2,7 +2,7 @@
 
 As the subnet name and tagline imply, it’s investing with a decentralized approach. In essence the subnet is a decentralized hedge fund, with a global network of quants and analysts providing competing investment strategies. We combine top strategies into ensemble strategies, turning them into the final product of the subnet – actionable intelligence that we use to manage assets, and/or offer to 3rd parties.
 
-With a unique design and solid technical foundation that follow the KISS and First Principles, the subnet can support any asset class, including Tao/Alpha staking, US stocks and stocks from other countries, forex, commodities, and more.
+With a unique design and solid technical foundation that follow the KISS and First Principles, the subnet can support any asset class, including Tao/Alpha staking, US stocks and stocks from other countries, forex, commodities, and more. It also supports all investment styles, from classic quant algorithms to machine learning & AI models to human insights and everything in between.
 
 ## How does the subnet work?
 

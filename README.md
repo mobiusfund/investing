@@ -21,6 +21,8 @@ The initial phase at launch is optimizing staking strategies in the Tao/Alpha ec
 
 The resulting business model and innovations will apply across crypto and other more traditional markets, extract alpha from these markets, minimize risks, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.pwc.com/ng/en/press-room/global-assets-under-management-set-to-rise.html) asset management industry.
 
+Please see [Investing/doc/Subnet88.md](https://github.com/mobiusfund/investing/blob/main/Investing/doc/Subnet88.md) for a comprehensive overview.
+
 ## Roadmap
 
 Phase I - Live at launch: Staking strategies ✓ 04/25 \
