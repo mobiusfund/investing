@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.3.1
+simst - Sim Strat, version 1.3.2
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -43,7 +43,7 @@ only effective once and ignored by subsequent rebalancing.
 Block-level precision may be simulated using Pandas 'interpolate()', if a
 given block is not found in available market data. By default, simst comes
 with an auto updated market database with hourly precision for dtao, and
-5-minute precision for stocks.
+30-minute precision for stocks.
 
 This tool is a part of Bittensor subnet 88 - Investing, the world's first
 Decentralized AUM. Please visit:
@@ -233,7 +233,7 @@ def pldaily(self, date, a=0):
 
     ndl = ba.index.droplevel
     for key in ba[ndl([1,2]).isin(dg['uid']) & ~ndl([0,1]).isin(dg['netuid'])].index if len(dg) else []:
-        alpha0k[(*key[:2], 0)] += ba.loc[key].iat[-1]
+        alpha0k[(*key[:2], 0)] = alpha0k.get((*key[:2], 0), 0) + ba.loc[key].iat[-1]
 
     dh = pd.DataFrame()
     for gg, dd in dg.groupby(kb) if len(dg) else []:
@@ -314,7 +314,7 @@ def pldaily1(self, date, a=1):
 
     ndl = ba.index.droplevel
     for key in ba[ndl([1,2]).isin(dg['uid']) & ~ndl([0,1]).isin(dg['netuid'])].index if len(dg) else []:
-        alpha0k[(*key[:2], '')] += ba.loc[key].iat[-1]
+        alpha0k[(*key[:2], '')] = alpha0k.get((*key[:2], ''), 0) + ba.loc[key].iat[-1]
 
     dh = pd.DataFrame()
     for gg, dd in dg.groupby(kb) if len(dg) else []:
