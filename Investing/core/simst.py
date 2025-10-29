@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.3.2
+simst - Sim Strat, version 1.3.3
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -231,9 +231,10 @@ def pldaily(self, date, a=0):
         dd.insert(0, 'uid', uid)
         dg = pd.concat([dg, dd])
 
-    ndl = ba.index.droplevel
+    ndl, self._dl = ba.index.droplevel, []
     for key in ba[ndl([1,2]).isin(dg['uid']) & ~ndl([0,1]).isin(dg['netuid'])].index if len(dg) else []:
         alpha0k[(*key[:2], 0)] = alpha0k.get((*key[:2], 0), 0) + ba.loc[key].iat[-1]
+        self._dl += [key]
 
     dh = pd.DataFrame()
     for gg, dd in dg.groupby(kb) if len(dg) else []:
@@ -312,9 +313,10 @@ def pldaily1(self, date, a=1):
         dd.insert(0, 'uid', uid)
         dg = pd.concat([dg, dd])
 
-    ndl = ba.index.droplevel
+    ndl, self._dl = ba.index.droplevel, []
     for key in ba[ndl([1,2]).isin(dg['uid']) & ~ndl([0,1]).isin(dg['netuid'])].index if len(dg) else []:
         alpha0k[(*key[:2], '')] = alpha0k.get((*key[:2], ''), 0) + ba.loc[key].iat[-1]
+        self._dl += [key]
 
     dh = pd.DataFrame()
     for gg, dd in dg.groupby(kb) if len(dg) else []:
@@ -391,6 +393,9 @@ def pltotal(self, dh, date, a, b=[]):
         loc += [dd.iloc[-1][col]]
         df.loc[len(df)] = *gg[:2], date, gg[2], *[a for z in zip(*loc) for a in z]
 
+    for gg in self._dl:
+        df.loc[len(df)] = *gg[:2], date, gg[2], *[0] * 20
+
     for gg, dd in dh.groupby(kk) if len(dh) else []:
         dd = dd.reset_index(drop=True)
         if dd['init'].any():
@@ -408,8 +413,8 @@ def pltotal(self, dh, date, a, b=[]):
 
 def plfinal(self):
     if not hasattr(self, '_hl'): return
-    self.hl = self._hl
-    self.ba = self.hl[self.hl['alpha_close'].abs() > 1e-6][self.ba.columns]
+    self.hl = hl = self._hl
+    self.ba = hl[(hl['alpha_close'].abs() > 1e-6) | (hl.loc[:,'block_open':].abs().sum(1) == 0)][self.ba.columns]
     self.shappend(self.sh)
     self.hlappend(self.hl)
     self.plappend(self.pl)
