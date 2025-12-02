@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.3.3
+simst - Sim Strat, version 1.3.4
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -27,6 +27,7 @@ Environment variables:
         # no db fetching
         SIMST_NO_FETCH
         # replace const.py
+        SIMST_PNL_DIR
         SIMST_VALI_TAKE
         SIMST_CLIP_OUTLIERS
         SIMST_CLIP_DEFAULT
@@ -145,12 +146,12 @@ def fetchdb(self):
     return fd
 
 def initfund(self):
-    if not len(self.st): return pd.DataFrame()
     st = self.st
     notin = 'init' not in st
     anum0 = {}
-    st['strat'] = st['strat'].str.replace(r'''[^{'\w":.,}\[\]\*=+-]''', '', regex=True)
     fi = pd.DataFrame(columns=[*kk, 'date', 'block', 'init', 'fund', 'strat', 'a'])
+    if not len(st): return fi
+    st['strat'] = st['strat'].str.replace(r'''[^{'\w":.,}\[\]\*=+-]''', '', regex=True)
     for _, di in st.sort_values(['date', 'block']).iterrows():
         uid = di['uid']
         try: strat = eval(di['strat'])
@@ -544,9 +545,15 @@ def main():
         sim.plfinal()
         print(', ' if date < dates[-1] else '.\n', end='', flush=True)
     sim.pl2sc()
+    if sim.pnl_dir: sim.pl.to_csv(f'{sim.pnl_dir}/PnL_{os.path.basename(csv)}')
     if not len(sim.sc): return
     print(f'clip outlier days: {sim.clip_outliers}, rolling window days: {sim.win_size}')
     print(sim.sc2pct().to_string(index=False))
+
+def concat(ls):
+    ds = [df for df in ls if len(df)]
+    return _concat(ds) if len(ds) else ls[0].copy()
+pd.concat, _concat = concat, pd.concat
 
 # reserved for live api server
 def stupdate(self, g, v): pass
@@ -572,6 +579,7 @@ SimSt.plappend = plappend
 SimSt.scappend = scappend
 
 SimSt.no_fetch = bool(os.getenv('SIMST_NO_FETCH', False))
+SimSt.pnl_dir = os.getenv('SIMST_PNL_DIR', PNL_DIR)
 SimSt.vali_take = float(os.getenv('SIMST_VALI_TAKE', VALI_TAKE))
 SimSt.clip_outliers = int(os.getenv('SIMST_CLIP_OUTLIERS', CLIP_OUTLIERS))
 SimSt.clip_default = int(os.getenv('SIMST_CLIP_DEFAULT', CLIP_DEFAULT))

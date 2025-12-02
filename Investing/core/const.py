@@ -2,6 +2,8 @@ FIRST_DATE = '2025-03-20'
 API_ROOT = 'http://api.investing88.ai'
 RAWGIT_ROOT = 'https://raw.githubusercontent.com/mobiusfund/investing'
 
+PNL_DIR = '/tmp' # empty string disables output
+
 VALI_TAKE = 0.18
 TAO_WEIGHT = 0.18
 
