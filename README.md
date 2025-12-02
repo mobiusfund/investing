@@ -1,7 +1,7 @@
 <div align="center">
 
 # Investing - Decentralized AUM
-[Dashboard](https://db.investing88.ai) • [Discord](https://discord.com/channels/799672011265015819/1358854051634221328) • [X](https://x.com/Investing88ai)
+[Dashboard](https://db.investing88.ai) • [Discord](https://discord.com/channels/799672011265015819/1358854051634221328) • [X](https://x.com/Investing88ai) • [KYM](https://kym.investing88.ai)
 </div>
 
 ---
@@ -17,11 +17,11 @@
 
 Envisioned as the world's first Decentralized AUM, leveraging a worldwide network of both human and artificial intelligence, Investing is the Bittensor subnet with the mission to provide investment services for both retail and institutional investors.
 
-The initial phase at launch is optimizing staking strategies in the Tao/Alpha ecosystem, by the community and for the community.
+The initial phase at launch was to optimize staking strategies in the Tao/Alpha ecosystem, by the community and for the community. Phase II US stocks was launched in July 2025.
 
-The resulting business model and innovations will apply across crypto and other more traditional markets, extract alpha from these markets, minimize risks, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.pwc.com/ng/en/press-room/global-assets-under-management-set-to-rise.html) asset management industry.
+The business model and innovations will apply across other assets and markets including crypto, forex, commodities, extract alpha from these markets, minimize risks, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.pwc.com/ng/en/press-room/global-assets-under-management-set-to-rise.html) asset management industry.
 
-Please see [Investing/doc/Subnet88.md](https://github.com/mobiusfund/investing/blob/main/Investing/doc/Subnet88.md) for a comprehensive overview.
+Please reference the comprehensive [overview](https://github.com/mobiusfund/investing/blob/main/Investing/doc/Subnet88.md) for further info.
 
 ## Roadmap
 
@@ -33,7 +33,11 @@ In parallel - Ongoing: A frontend AUM app serving real-world investors
 
 ## Installation
 
-Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks, including macOS. For first-time miners, please follow the [Bittensor document](https://docs.learnbittensor.org/miners/) to register a hotkey.
+For first-time miners, please follow the [Bittensor document](https://docs.learnbittensor.org/miners/) to register a hotkey.
+
+The [KYM app](https://kym.investing88.ai) (Know Your Miner) provides a simple zero-code mining interface, making PM2 setup below optional. Even without involving PM2, it's recommended to install the repo in order to take advantage of the stand-alone tool `Investing/bin/simst` (Sim Strat) for back-testing strategies.
+
+Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks, including macOS.
 
 #### Setup
 
@@ -191,7 +195,7 @@ As the initial capital, we assume $$fund = 1000\ Tao$$ for Tao/Alpha, and $$fund
 
 Miners are encouraged to emphasize long-term strategies with portfolio management, in contrast to short-term trading in isolated instruments. The general goal is to consistently outperform the market by boosting alpha while reducing beta. For miners new to portfolio management, the concept of MPT and CAPM can be a good starting point in optimizing strategies and portfolios using machine learning.
 
-The stand-alone tool `Investing/bin/simst` (Sim Strat) can be convenient for back testing strategies and tuning performance based on historical market data.
+The stand-alone tool `Investing/bin/simst` (Sim Strat) can be convenient for back-testing strategies and tuning performance based on historical market data.
 
 Note that in contrast to live mining, `simst` may simulate block-level precision based on limited market data. The difference in results should not be far off especially in a long-term timeframe.
 
