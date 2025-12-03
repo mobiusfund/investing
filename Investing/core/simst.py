@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.3.4
+simst - Sim Strat, version 1.3.5
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -550,9 +550,9 @@ def main():
     print(f'clip outlier days: {sim.clip_outliers}, rolling window days: {sim.win_size}')
     print(sim.sc2pct().to_string(index=False))
 
-def concat(ls):
+def concat(ls, *kv, **kw):
     ds = [df for df in ls if len(df)]
-    return _concat(ds) if len(ds) else ls[0].copy()
+    return _concat(ds, *kv, **kw) if len(ds) else ls[0].copy()
 pd.concat, _concat = concat, pd.concat
 
 # reserved for live api server
