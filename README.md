@@ -180,7 +180,7 @@ To encourage allocations in assets other than cash, we adjust score in live code
 To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic Emission Control in live code:
 ```math
 \begin{aligned}
-& dec = \left( \frac {\ last\ active\ } {\ 30\ } \right) ^ {2},\ if\ days > 7 \\
+& dec = \left( \frac {\ last\ active\ } {\ 20\ } \right) ^ {2},\ if\ days > 5 \\
 \\
 & score = score\ *\ \left( 1 - min( dec,\ 1 ) \right) \\
 \\
