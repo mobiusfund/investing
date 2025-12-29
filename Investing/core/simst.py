@@ -113,7 +113,7 @@ def fetchda(self, a):
         pd.read_csv(f'{db[:-3]}.00').to_sql('bndaily', conn, index=False)
     bn = pd.read_sql('SELECT * FROM bndaily', conn)
     last = bn['date'].iat[-1] if len(bn) > 1 else FIRST_DATE
-    if last >= time.strftime('%F', time.gmtime(time.time() - 86400 - 18000)) or self.no_fetch:
+    if last >= time.strftime('%F', time.gmtime(time.time() - 86400 - 28800)) or self.no_fetch:
         return bn[bn['date'] >= date]
 
     print(f'Fetching {db.split("/")[-1]}, begin {last}...', end='', flush=True)

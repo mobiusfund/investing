@@ -90,7 +90,7 @@ For US stocks, rebalancing is currently supported via two order types in a tradi
 
 To accommodate multiple asset classes, the UID space and subnet emissions are partitioned based on [asset ratio](https://api.investing88.ai/ratio), which will be adjusted over time as the subnet evolves.
 
-All strategy updates are shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation takes place at 04:00 UTC. The dashboard emphasizes raw performance rankings and comparisons between asset classes. To see adjusted rankings and scores set by validators that match on-chain incentives, use the `Investing/bin/validator` command.
+All strategy updates are shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation takes place at 00:00 UTC for Tao/Alpha, and 06:00 UTC for US stocks. The dashboard emphasizes raw performance rankings and comparisons between asset classes. To see adjusted rankings and scores set by validators that match on-chain incentives, use the `Investing/bin/validator` command.
 
 One machine can run multiple miners with their corresponding strategies, with an extra argument e.g. `--axon.port 8092` added to the `pm2` command. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
@@ -189,7 +189,7 @@ To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic E
 
 Finally, a rolling window is applied depending on markets and asset classes. The window size is currently set at 30 days for all assets. It will be adjusted over time as the subnet evolves.
 
-As the initial capital, we assume $$fund = 1000\ Tao$$ for Tao/Alpha, and $$fund = 10M\ USD$$ for US stocks. Profit and loss are calculated daily at 04:00 UTC. Return is determined by price performance of allocated assets plus dividends. For Tao/Alpha, dividends are calculated from validator delegation with the default 18% take.
+As the initial capital, we assume $$fund = 1000\ Tao$$ for Tao/Alpha, and $$fund = 10M\ USD$$ for US stocks. Profit and loss are calculated daily. Return is determined by price performance of allocated assets plus dividends. For Tao/Alpha, dividends are calculated from validator delegation with the default 18% take.
 
 #### Performance
 
