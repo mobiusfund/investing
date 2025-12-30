@@ -19,6 +19,8 @@ Envisioned as the world's first Decentralized AUM, leveraging a worldwide networ
 
 The initial phase at launch was to optimize staking strategies in the Tao/Alpha ecosystem, by the community and for the community. Phase II US stocks was launched in July 2025.
 
+[88 Quant Fund](https://db.investing88.ai/88-quant-fund) was launched in December 2025, a Tao/Alpha hedge fund powered by the subnet.
+
 The business model and innovations will apply across other assets and markets including crypto, forex, commodities, extract alpha from these markets, minimize risks, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.pwc.com/ng/en/press-room/global-assets-under-management-set-to-rise.html) asset management industry.
 
 Please reference the comprehensive [overview](https://github.com/mobiusfund/investing/blob/main/Investing/doc/Subnet88.md) for further info.
