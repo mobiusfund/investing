@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.3.5
+simst - Sim Strat, version 1.3.8
 Copyright © 2025 Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -113,7 +113,8 @@ def fetchda(self, a):
         pd.read_csv(f'{db[:-3]}.00').to_sql('bndaily', conn, index=False)
     bn = pd.read_sql('SELECT * FROM bndaily', conn)
     last = bn['date'].iat[-1] if len(bn) > 1 else FIRST_DATE
-    if last >= time.strftime('%F', time.gmtime(time.time() - 86400 - 28800)) or self.no_fetch:
+    late = [7200, 28800]
+    if last >= time.strftime('%F', time.gmtime(time.time() - 86400 - late[a])) or self.no_fetch:
         return bn[bn['date'] >= date]
 
     print(f'Fetching {db.split("/")[-1]}, begin {last}...', end='', flush=True)
