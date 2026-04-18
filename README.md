@@ -189,7 +189,7 @@ To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic E
 \end{aligned}
 ```
 
-Finally, a rolling window is applied depending on markets and asset classes. The window size is currently set at 30 days for all assets. It will be adjusted over time as the subnet evolves.
+Finally, a rolling window is applied depending on markets and asset classes. The window size is currently set at 50 days for all assets. It will be adjusted over time as the subnet evolves.
 
 As the initial capital, we assume $$fund = 1000\ Tao$$ for Tao/Alpha, and $$fund = 10M\ USD$$ for US stocks. Profit and loss are calculated daily. Return is determined by price performance of allocated assets plus dividends. For Tao/Alpha, dividends are calculated from validator delegation with the default 18% take.
 

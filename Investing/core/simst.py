@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.3.9
+simst - Sim Strat, version 1.4.0
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
