@@ -1,5 +1,5 @@
-bittensor>=9
-setuptools>=70
+bittensor>=10
+setuptools==70
 requests>=2
 sqlalchemy>=2
 numpy>=2
