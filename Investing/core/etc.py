@@ -100,8 +100,9 @@ def score(pl, ab, da, ra, n=256):
 
     score = [sc[sc['uid'] == i]['score'].iat[0] if i in sc['uid'].values else 0 for i in range(n)]
     dec = (sc['last'].sum() / (sc['days'] + 1).sum()) ** DEC_DECAY
-    if dec > DEC_CUTOFF: score[DEC_UID] = sum(score) * dec / (1 - dec)
-    if not any(score): score[DEC_UID] = 1
+    #if dec > DEC_CUTOFF: score[DEC_UID] = sum(score) * dec / (1 - dec)
+    #if not any(score): score[DEC_UID] = 1.0
+    score[DEC_UID] = sum(score) / sum(ra) * (1 - sum(ra)) if sum(ra) else 1.0
 
     sc['hotkey'] = sc['hotkey'].map(lambda x: f'{x[:6]}...{x[-6:]}')
     sim.sc = sc[sc['uid'] < n].sort_values(['score', 'return%'])[::-1]
