@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.4.0
+simst - Sim Strat, version 1.4.1
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -136,7 +136,7 @@ def fetchdb(self):
     for da in ['split', 'dividend'] if len(fd[1]) else []:
         db = f'{cd}/db/{da}.db'
         conn = sql.create_engine(f'sqlite:///{db}').connect()
-        try: r = json.loads(requests.get(f'{API_ROOT}/{da}').json())
+        try: r = [] if self.no_fetch else json.loads(requests.get(f'{API_ROOT}/{da}').json())
         except: r = []
         df = pd.DataFrame(r, None, pd.read_csv(f'{db[:-3]}.col').columns)
         if len(df): df.to_sql(da, conn, if_exists='replace', index=False)
