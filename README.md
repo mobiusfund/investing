@@ -151,7 +151,7 @@ A simple number $$score$$ is used to evaluate strategies, where:
 \end{aligned}
 ```
 
-Two parameters here are developed exclusively by Mobius Fund: $$odds\\%$$ is essentially winning odds normalized using Kelly's equation, with the profit/loss ratio normalized to 1 while the Kelly factor remaining the same; $$lsr$$ is >0.99 correlated to Sharpe Ratio and mathematically more sound. Empirically $$lsr \approx \frac {\ sharpe\ ratio\ } {\ 11\ }$$.
+Two parameters here are developed exclusively by Mobius Fund: $$odds\\%$$ is essentially winning odds normalized using Kelly's equation, with the profit/loss ratio normalized to 1 while the Kelly factor remaining the same; $$lsr$$ is >0.99 correlated to Sharpe Ratio and mathematically more sound. Empirically $$lsr \approx \frac {\ sharpe\ ratio\ } {\ 10\ }$$.
 
 There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, and $$risk\\% = 0$$. Since $$mar$$ is inherently a long-term parameter, we make an empirical adjustment in live code to account for short-term effects in Bittensor, where $$R_{init} = 5$$ for both Tao/Alpha and US stocks:
 ```math
@@ -171,10 +171,10 @@ To reduce short-term random effects, we clip daily profit outliers in live code 
 \end{aligned}
 ```
 
-To encourage allocations in assets other than cash, we adjust score in live code:
+To encourage long positions and allocations in assets other than cash, we adjust score in live code:
 ```math
 \begin{aligned}
-& score = score\ *\ max( 1 - cash\ alloc,\ 0.01 )
+& score = score\ *\ max( 1 - short\ and\ cash\ alloc,\ 0.01 )
 \\
 \end{aligned}
 ```
