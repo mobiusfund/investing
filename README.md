@@ -171,7 +171,7 @@ To reduce short-term random effects, we clip daily profit outliers in live code 
 \end{aligned}
 ```
 
-To encourage long positions and allocations in assets other than cash, we adjust score in live code:
+To encourage long positions and allocations in assets other than cash (in US stocks, certain fixed income ETFs are considered cash), we adjust score in live code:
 ```math
 \begin{aligned}
 & score = score\ *\ max( 1 - short\ and\ cash\ alloc,\ 0.01 )
