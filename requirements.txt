@@ -1,4 +1,4 @@
-bittensor>=10
+bittensor==10.3.0
 setuptools==70
 requests>=2
 sqlalchemy>=2
