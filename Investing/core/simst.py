@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.4.1
+simst - Sim Strat, version 1.5.1
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -168,7 +168,8 @@ def initfund(self):
         bn = self.db[anum]
         if not len(bn): continue
         date = max(bn['date'].iat[0], di['date'])
-        block = bn[bn['date'] >= date]['block'].iat[0] if notin else di['block']
+        try: block = bn[bn['date'] >= date]['block'].iat[0] if notin else di['block']
+        except: continue
         init = int(uid not in fi['uid'].values) if notin else di['init']
         hk = '' if 'hotkey' not in st else di['hotkey']
         fi.loc[len(fi)] = uid, hk, date, block, init, *di[['fund', 'strat']], anum
