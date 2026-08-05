@@ -100,6 +100,8 @@ To curb UID spam, each miner requires a certain amount of Alpha. The total requi
 
 A newly registered miner goes live on the dashboard after day 1, with an immunity period of 3 days.
 
+The API messages returned during strategy submission will provide additional guidance on the workflow and logistics.
+
 #### Testnet
 
 Testnet can be used for connection testing. Testnet strategies will not be accepted nor evaluated. Both testnet and mainnet miners can easily evaluate their strategies using the `Investing/bin/simst` command.
@@ -191,7 +193,7 @@ To encourage active rebalancing on a regular basis, we introduce DEC - Dynamic E
 
 Finally, a rolling window is applied depending on markets and asset classes. The window size is currently set at 50 days for all assets. It will be adjusted over time as the subnet evolves.
 
-As the initial capital, we assume $$fund = 1000\ Tao$$ for Tao/Alpha, and $$fund = 10M\ USD$$ for US stocks. Profit and loss are calculated daily. Return is determined by price performance of allocated assets plus dividends. For Tao/Alpha, dividends are calculated from validator delegation with the default 18% take.
+As the initial capital, we assume $$fund = 2000\ Tao$$ for Tao/Alpha (increased from $$1000$$ to account for market growth), and $$fund = 10M\ USD$$ for US stocks. Profit and loss are calculated daily. Return is determined by price performance of allocated assets plus dividends. For Tao/Alpha, dividends are calculated from validator delegation with the default 18% take.
 
 #### Performance
 
