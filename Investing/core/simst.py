@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.5.1
+simst - Sim Strat, version 1.6.0
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -16,7 +16,7 @@ Options:
 -f, --fund      initial fund, overrides the fund column in the csv file
 -e, --end       end date that differs from yesterday
 -c, --clip      clip daily profit outliers, default 2 days
--w, --win       score rolling window size, default 30 days
+-w, --win       score rolling window size, default 50 days
 -h, --help      print this message and exit
 
 Examples:
@@ -46,7 +46,7 @@ given block is not found in available market data. By default, simst comes
 with an auto updated market database with hourly precision for dtao, and
 30-minute precision for stocks.
 
-This tool is a part of Bittensor subnet 88 - Investing, the world's first
+This tool is a part of Bittensor Subnet 88 - Investing, the world's first
 Decentralized AUM. Please visit:
 
 https://github.com/mobiusfund/investing
@@ -68,6 +68,7 @@ an = 2
 class SimSt():
     def __init__(self, st=pd.DataFrame()):
         self.st = st.copy()
+        self.dr = {}
         self.db = self.fetchdb()
         self.rv = self.db[0][:0]
         self.fi = self.initfund()
@@ -133,6 +134,13 @@ def fetchdb(self):
     st = self.st
     fd = [self.fetchda(a) for a in range(an)]
     if len(fd[1]): fd[1].insert(3, 'price', fd[1]['open'])
+    for da in ['dereg'] if len(fd[0]) else []:
+        dc = f'{cd}/db/{da}.dc'
+        try: r = {} if self.no_fetch else json.loads(requests.get(f'{API_ROOT}/{da}').json())
+        except: r = {}
+        if len(r): print(str(r).replace("'", '"'), file=open(dc, 'w'))
+        try: self.dr = json.loads(open(dc).read())
+        except: pass
     for da in ['split', 'dividend'] if len(fd[1]) else []:
         db = f'{cd}/db/{da}.db'
         conn = sql.create_engine(f'sqlite:///{db}').connect()
@@ -205,6 +213,7 @@ def pldaily(self, date, a=0):
     bb = fa[kb].drop_duplicates().sort_values(kb)
     nn = pd.concat([ba[kn], fa[kn]]).drop_duplicates().sort_values(kn).reset_index()
     dn = pd.concat([bn[bn['date'] == date], rv[rv['date'] == date]])
+    dn = dn[dn['netuid'] != self.dr.get(date, None)]
     ba, fa = ba.set_index(kn).sort_index(), fa.set_index(kb).sort_index()
 
     alpha0k = {}
