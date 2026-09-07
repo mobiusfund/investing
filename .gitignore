@@ -1,5 +1,6 @@
 # Investing
 Investing/core/db/*.db
+Investing/core/db/*.dc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
