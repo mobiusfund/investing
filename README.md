@@ -1,7 +1,7 @@
 <div align="center">
 
 # Investing - Decentralized AUM
-[Dashboard](https://db.investing88.ai) • [Discord](https://discord.com/channels/799672011265015819/1358854051634221328) • [X](https://x.com/Investing88ai) • [KYM](https://kym.investing88.ai)
+[Dashboard](https://db.investing88.ai) • [KYM](https://kym.investing88.ai) • [Discord](https://discord.com/channels/799672011265015819/1358854051634221328) • [X](https://x.com/Investing88ai)
 </div>
 
 ---
@@ -17,11 +17,11 @@
 
 Envisioned as the world's first Decentralized AUM, leveraging a worldwide network of both human and artificial intelligence, Investing is the Bittensor subnet with the mission to provide investment services for both retail and institutional investors.
 
-The initial phase at launch was to optimize staking strategies in the Tao/Alpha ecosystem, by the community and for the community. Phase II US stocks was launched in July 2025.
+The initial phase at launch focused on optimizing staking strategies in the Tao/Alpha ecosystem, by the community and for the community. Phase II US stocks launched in July 2025.
 
-[88 Quant Fund](https://db.investing88.ai/88-quant-fund) was launched in December 2025, a Tao/Alpha hedge fund powered by the subnet.
+The [88 Quant Fund](https://db.investing88.ai/88-quant-fund) launched in December 2025, a Tao/Alpha hedge fund powered by the subnet.
 
-The business model and innovations will apply across other assets and markets including crypto, forex, commodities, extract alpha from these markets, minimize risks, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.pwc.com/ng/en/press-room/global-assets-under-management-set-to-rise.html) asset management industry.
+The business model and innovations will apply across other assets and markets including crypto, forex, commodities, extract alpha from these markets, manage risk, and deliver optimized portfolio returns to a broad range of investors in the global [145 trillion dollar](https://www.mckinsey.com/industries/financial-services/our-insights/asset-management-2025-the-great-convergence) asset management industry.
 
 Please reference the comprehensive [overview](https://github.com/mobiusfund/investing/blob/main/Investing/doc/Subnet88.md) for further info.
 
@@ -35,9 +35,9 @@ In parallel - Ongoing: A frontend AUM app serving real-world investors
 
 ## Installation
 
-For first-time miners, please follow the [Bittensor document](https://docs.learnbittensor.org/miners/) to register a hotkey.
+For first-time miners, please follow the [Bittensor document](https://www.bittensor.com/docs/guides/mining) to register a hotkey.
 
-The [KYM app](https://kym.investing88.ai) (Know Your Miner) provides a simple zero-code mining interface, making PM2 setup below optional. Even without involving PM2, it's recommended to install the repo in order to take advantage of the stand-alone tool `Investing/bin/simst` (Sim Strat) for back-testing strategies.
+The [KYM app](https://kym.investing88.ai) (Know Your Miner) provides a simple zero-code mining interface, making PM2 setup below optional. Even without involving PM2, it's recommended to install the repo in order to take advantage of the stand-alone tool `Investing/bin/simst` (Sim Strat) for strategy backtesting.
 
 Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks, including macOS.
 
@@ -86,25 +86,25 @@ pm2 start neurons/validator.py \
 
 When a strategy is filed under the `Investing/strat/` directory, it will be automatically submitted by the miner. Please see [README](https://github.com/mobiusfund/investing/tree/main/Investing/strat) for further info.
 
-A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the file timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in asset allocation will incur [slippage](https://docs.learnbittensor.org/learn/slippage) costs as well as [staking/unstaking](https://github.com/opentensor/subtensor/pull/1386) fees for Tao/Alpha, and transaction fees for other assets.
+A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the file timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in asset allocation will incur [slippage](https://www.bittensor.com/docs/concepts/staking-pools) costs as well as [staking/unstaking](https://github.com/opentensor/subtensor/pull/1386) fees for Tao/Alpha, and transaction fees for other assets.
 
-For US stocks, rebalancing is currently supported via two order types in a trading session: Market on Open (MOO) and Market on Close (MOC), to take advantage of maximum liquidity. Per NYSE and NASDAQ rules, only strategies submitted before 09:28 and 15:50 Eastern time will be counted. Currently supported [ticker symbols](https://api.investing88.ai/assets) are generally large cap assets.
+For US stocks, rebalancing currently supports two order types during a trading session: Market on Open (MOO) and Market on Close (MOC), taking advantage of maximum liquidity. Per NYSE and NASDAQ rules, only strategies submitted before 09:28 and 15:50 Eastern Time will be counted. Currently supported [ticker symbols](https://api.investing88.ai/assets) are generally large cap assets.
 
 To accommodate multiple asset classes, the UID space and subnet emissions are partitioned based on [asset ratio](https://api.investing88.ai/ratio), which will be adjusted over time as the subnet evolves.
 
-All strategy updates are shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation takes place at 00:00 UTC for Tao/Alpha, and 06:00 UTC for US stocks. The dashboard emphasizes raw performance rankings and comparisons between asset classes. To see adjusted rankings and scores set by validators that match on-chain incentives, use the `Investing/bin/validator` command.
+All strategy updates are shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation takes place at 00:00 UTC for Tao/Alpha, and 06:00 UTC for US stocks. The dashboard emphasizes raw performance rankings and comparisons across asset classes. To see adjusted rankings and scores set by validators that match on-chain incentives, use the `Investing/bin/validator` command.
 
 One machine can run multiple miners with their corresponding strategies, with an extra argument e.g. `--axon.port 8092` added to the `pm2` command. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
-To curb UID spam, each miner requires a certain amount of Alpha. The total requirement is reflected on the coldkey, currently 192 Alpha staked + 64 Alpha paid, subject to adjustment.
+To curb UID spam, a certain amount of Alpha is required from each miner. The total requirement is reflected on the coldkey, currently 192 Alpha staked + 64 Alpha paid, subject to adjustment.
 
 A newly registered miner goes live on the dashboard after day 1, with an immunity period of 3 days.
 
-The API messages returned during strategy submission will provide additional guidance on the workflow and logistics.
+API response messages during strategy submission provide additional operational and workflow guidance.
 
 #### Testnet
 
-Testnet can be used for connection testing. Testnet strategies will not be accepted nor evaluated. Both testnet and mainnet miners can easily evaluate their strategies using the `Investing/bin/simst` command.
+Testnet can be used for connection testing. Testnet strategies are not accepted or evaluated. Both testnet and mainnet miners can easily evaluate their strategies using the `Investing/bin/simst` command.
 
 ## Scoring
 
@@ -153,7 +153,7 @@ A simple number $$score$$ is used to evaluate strategies, where:
 \end{aligned}
 ```
 
-Two parameters here are developed exclusively by Mobius Fund: $$odds\\%$$ is essentially winning odds normalized using Kelly's equation, with the profit/loss ratio normalized to 1 while the Kelly factor remaining the same; $$lsr$$ is >0.99 correlated to Sharpe Ratio and mathematically more sound. Empirically $$lsr \approx \frac {\ sharpe\ ratio\ } {\ 10\ }$$.
+Two parameters here are developed exclusively by Mobius Fund: $$odds\\%$$ is essentially winning odds normalized using Kelly's equation, with the profit/loss ratio normalized to 1 while preserving the Kelly factor; $$lsr$$ is highly correlated with Sharpe Ratio and mathematically more sound. Empirically $$lsr \approx \frac {\ sharpe\ ratio\ } {\ 10\ }$$.
 
 There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, and $$risk\\% = 0$$. Since $$mar$$ is inherently a long-term parameter, we make an empirical adjustment in live code to account for short-term effects in Bittensor, where $$R_{init} = 5$$ for both Tao/Alpha and US stocks:
 ```math
@@ -173,7 +173,7 @@ To reduce short-term random effects, we clip daily profit outliers in live code 
 \end{aligned}
 ```
 
-To encourage long positions and allocations in assets other than cash (in US stocks, certain fixed income ETFs are considered cash), we adjust score in live code:
+To encourage meaningful asset allocation rather than excessive cash (in US stocks, certain fixed income ETFs are considered cash) or short exposure, we adjust score in live code:
 ```math
 \begin{aligned}
 & score = score\ *\ max( 1 - short\ and\ cash\ alloc,\ 0.01 )
@@ -197,14 +197,14 @@ As the initial capital, we assume $$fund = 2000\ Tao$$ for Tao/Alpha (increased 
 
 #### Performance
 
-Miners are encouraged to emphasize long-term strategies with portfolio management, in contrast to short-term trading in isolated instruments. The general goal is to consistently outperform the market by boosting alpha while reducing beta. For miners new to portfolio management, the concept of MPT and CAPM can be a good starting point in optimizing strategies and portfolios using machine learning.
+Miners are encouraged to emphasize long-term strategies with portfolio management, in contrast to short-term trading in isolated instruments. The general goal is to consistently outperform the market by boosting alpha while reducing beta. For miners new to portfolio management, the concept of MPT and CAPM can be a good starting point for optimizing strategies and portfolios using machine learning.
 
-The stand-alone tool `Investing/bin/simst` (Sim Strat) can be convenient for back-testing strategies and tuning performance based on historical market data.
+The stand-alone tool `Investing/bin/simst` (Sim Strat) can be convenient for backtesting strategies and tuning performance using historical market data.
 
-Note that in contrast to live mining, `simst` may simulate block-level precision based on limited market data. The difference in results should not be far off especially in a long-term timeframe.
+Note that unlike live mining, `simst` may simulate block-level precision from limited market data. Differences in results should become less pronounced over longer timeframes.
 
 ## Disclaimer
-Past performance is no guarantee of future results. The subnet does not provide financial advice of any kind. Investing carries inherent risks, including the risk of partial or total loss of capital. The subnet is not responsible for any profit or loss resulting from any strategies shared by the Bittensor community.
+Past performance is no guarantee of future results. The subnet does not provide financial advice. Investing carries inherent risks, including the risk of partial or total loss of capital. The subnet is not responsible for profits or losses resulting from strategies shared by the Bittensor community.
 
 ## License
 This repository is licensed under the MIT License.
