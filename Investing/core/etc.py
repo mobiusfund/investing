@@ -93,16 +93,25 @@ def score(pl, ab, da, ra, n=256):
     sc['score'] *= ((1 - sc['cash']) ** CASH_DECAY).clip(CASH_RESIDUE, 1)
     sc.insert(6, 'cash', sc.pop('cash').round(4))
 
+    if type(ra[-1]) is dict:
+        ua = {int(u):ra[-1][u] for u in ra[-1]}
+        ra[-1] = ua
+        ra = ra[:-1]
+    else: ua = {}
+
     scz = sc['score'].sum()
     for a in range(len(ra)):
         sca = sc[sc['a'] == a]['score'].sum()
         if sca: sc.loc[sc['a'] == a, 'score'] *= ra[a] * scz / sca
 
     score = [sc[sc['uid'] == i]['score'].iat[0] if i in sc['uid'].values else 0 for i in range(n)]
+    su = sum(ra)
+    for u in ua: score[u] = scz * ua[u] / su if su else ua[u]
+    su += sum(ua.values())
     dec = (sc['last'].sum() / (sc['days'] + 1).sum()) ** DEC_DECAY
     #if dec > DEC_CUTOFF: score[DEC_UID] = sum(score) * dec / (1 - dec)
     #if not any(score): score[DEC_UID] = 1.0
-    score[DEC_UID] = sum(score) / sum(ra) * (1 - sum(ra)) if sum(ra) else 1.0
+    score[DEC_UID] = sum(score) * (1 - su) / su if su else 1.0
 
     sc['hotkey'] = sc['hotkey'].map(lambda x: f'{x[:6]}...{x[-6:]}')
     sim.sc = sc[sc['uid'] < n].sort_values(['score', 'return%'])[::-1]
