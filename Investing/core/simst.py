@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.6.0
+simst - Sim Strat, version 1.6.1
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -15,8 +15,8 @@ Options:
         -h
 -f, --fund      initial fund, overrides the fund column in the csv file
 -e, --end       end date that differs from yesterday
--c, --clip      clip daily profit outliers, default 2 days
--w, --win       score rolling window size, default 50 days
+-c, --clip      clip daily profit outliers, default 2 days, 0 = no clip
+-w, --win       score rolling window size, default 50 days, 0 = full size
 -h, --help      print this message and exit
 
 Examples:
@@ -545,7 +545,7 @@ def main():
     sim = SimSt(pd.read_csv(csv))
     if fund: sim.fi['fund'] = fund
     if clip >= 0: sim.clip_outliers = clip
-    if win: sim.win_size = [win] * an
+    if win >= 0: sim.win_size = [win] * an
     if end:
         sim.db[:an] = [bn[bn['date'] <= end] if len(bn) else bn for bn in sim.db[:an]]
     dates = sorted(set([d for bn in sim.db[:an] if len(bn) for d in bn['date'].values]))
