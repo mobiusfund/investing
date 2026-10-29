@@ -3,6 +3,7 @@
 import os, math
 import requests
 import contextlib
+import datetime as dt
 import pandas as pd
 from .const import *
 from .simst import SimSt, asset
@@ -42,12 +43,13 @@ def dist(st, nn):
             ab[i].append([*kk, *df['alloc'].map(lambda x: math.dist(a, x) if a and x else 1)])
             ab[i].append([*kk, *df['block'].map(lambda x: b - x)])
             ab[i][-2][j+2] = 0
-    for i in [0, 1]: ab[-1].append([])
-    ab[-1].append(0)
+    # black/white/graylist, dd_trigger
+    for i in [0, 1, 2, 3]: ab[-1].append([[], [], {}, 0][i])
     return ab
 
 def dedupe(ab):
     dd_trigger = ab[-1][-1] or DD_TRIGGER
+    ab[-1][2] = {int(k):v for k,v in ab[-1][2].items()}
     bb = [7200] + [86400] * (len(ab) - 2)
     dd = pd.DataFrame([], pd.Index([], name='uid'), ['dedupe'])
     for i in range(len(ab) - 1):
@@ -59,9 +61,13 @@ def dedupe(ab):
         for uid, di in da.iterrows():
             du = db.loc[uid, di[(di.index != uid) & (di < dd_trigger)].index]
             dd.loc[uid] = min((du[du >= 0].min() / bb[i] / DAYS_FINAL) ** DD_POWER, 1)
-    for i in [0, 1]:
-        print(f"{['black', 'white'][i]}list: {ab[-1][i]}")
-        dd.loc[dd.index.isin(ab[-1][i])] = i
+    def fn(x):
+        if type(x) is not str: return x
+        days = (dt.datetime.now() - dt.datetime.strptime(x, '%Y-%m-%d')).days
+        return 1 / max(days + 1, 1) ** GL_POWER
+    for i in [0, 1, 2]:
+        print(f"{['black', 'white', 'gray'][i]}list: {ab[-1][i]}")
+        for uid in ab[-1][i]: dd.loc[uid] = i if i < 2 else fn(ab[-1][i][uid])
     print(f'threshold: {dd_trigger}')
     print(dd.dropna().reset_index().to_string(index=False))
     return dd

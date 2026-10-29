@@ -7,6 +7,7 @@ PNL_DIR = '/tmp' # empty string disables output
 VALI_TAKE = 0.18
 TAO_WEIGHT = 0.18
 
+GL_POWER = 1
 DD_POWER = 1
 DD_TRIGGER = 0.01
 
