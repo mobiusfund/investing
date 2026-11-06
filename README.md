@@ -29,7 +29,7 @@ Please reference the comprehensive [overview](https://github.com/mobiusfund/inve
 
 Phase I - Live at launch: Staking strategies ✓ 04/25 \
 Phase II - 3 to 6 months: Portfolio management with US stocks ✓ 07/25 \
-Phase III - 6 months to 1 year: Multi-class asset management in global markets \
+Phase III - 6 months to 1 year: Multi-class asset management in global markets ✓ 11/26 \
 Phase IV - 1 year and beyond: Fully realized, Decentralized AUM \
 In parallel - Ongoing: A frontend AUM app serving real-world investors
 
@@ -37,7 +37,9 @@ In parallel - Ongoing: A frontend AUM app serving real-world investors
 
 For first-time miners, please follow the [Bittensor document](https://www.bittensor.com/docs/guides/mining) to register a hotkey.
 
-The [KYM app](https://kym.investing88.ai) (Know Your Miner) provides a simple zero-code mining interface, making PM2 setup below optional. Even without involving PM2, it's recommended to install the repo in order to take advantage of the stand-alone tool `Investing/bin/simst` (Sim Strat) for strategy backtesting.
+The [KYM app](https://kym.investing88.ai) (Know Your Miner) provides a simple zero-code mining interface. MetaTrader miners can skip the following sections.
+
+While PM2 setup below is optional, it's recommended to install the repo in order to take advantage of the stand-alone tool `Investing/bin/simst` (Sim Strat) for strategy backtesting.
 
 Please avoid using the root account, and make sure Python3 is available as command `python` under a regular user account. Ubuntu 22.04 is the only officially supported OS, although many other OSes can also work with minimum tweaks, including macOS.
 
@@ -84,6 +86,8 @@ pm2 start neurons/validator.py \
 
 ## Mining
 
+MetaTrader miners do not submit strategies. Instead, they trade normally through their linked MetaTrader accounts. Both live and demo accounts can be linked via the [KYM app](https://kym.investing88.ai).
+
 When a strategy is filed under the `Investing/strat/` directory, it will be automatically submitted by the miner. Please see [README](https://github.com/mobiusfund/investing/tree/main/Investing/strat) for further info.
 
 A strategy can be revised or "rebalanced" whenever necessary. It will be automatically resubmitted based on the file timestamp. Rebalancing can happen when updating the timestamp without changing the strategy file. A change in asset allocation will incur [slippage](https://www.bittensor.com/docs/concepts/staking-pools) costs as well as [staking/unstaking](https://github.com/opentensor/subtensor/pull/1386) fees for Tao/Alpha, and transaction fees for other assets.
@@ -92,7 +96,7 @@ For US stocks, rebalancing currently supports two order types during a trading s
 
 To accommodate multiple asset classes, the UID space and subnet emissions are partitioned based on [asset ratio](https://api.investing88.ai/ratio), which will be adjusted over time as the subnet evolves.
 
-All strategy updates are shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation takes place at 00:00 UTC for Tao/Alpha, and 06:00 UTC for US stocks. The dashboard emphasizes raw performance rankings and comparisons across asset classes. To see adjusted rankings and scores set by validators that match on-chain incentives, use the `Investing/bin/validator` command.
+All strategy updates are shown on the [dashboard](https://db.investing88.ai) immediately. Daily score calculation takes place at 00:00 UTC for Tao/Alpha, 02:00 UTC for MetaTrader, and 06:00 UTC for US stocks. The dashboard emphasizes raw performance rankings and comparisons across asset classes. To see adjusted rankings and scores set by validators that match on-chain incentives, use the `Investing/bin/validator` command.
 
 One machine can run multiple miners with their corresponding strategies, with an extra argument e.g. `--axon.port 8092` added to the `pm2` command. However a new or revised strategy that is overly similar to a pre-existing one will receive a reduced score.
 
@@ -155,7 +159,7 @@ A simple number $$score$$ is used to evaluate strategies, where:
 
 Two parameters here are developed exclusively by Mobius Fund: $$odds\\%$$ is essentially winning odds normalized using Kelly's equation, with the profit/loss ratio normalized to 1 while preserving the Kelly factor; $$lsr$$ is highly correlated with Sharpe Ratio and mathematically more sound. Empirically $$lsr \approx \frac {\ sharpe\ ratio\ } {\ 10\ }$$.
 
-There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, and $$risk\\% = 0$$. Since $$mar$$ is inherently a long-term parameter, we make an empirical adjustment in live code to account for short-term effects in Bittensor, where $$R_{init} = 5$$ for both Tao/Alpha and US stocks:
+There are two edge cases when a strategy is getting started: All days are loss days, where $$kb = 0$$, and $$kelly = \text{–}\infty$$ therefore $$\text{–}1$$; All days are profit days, where $$kb = \infty$$, $$kelly = 1$$, and $$risk\\% = 0$$. Since $$mar$$ is inherently a long-term parameter, we make an empirical adjustment in live code to account for short-term effects in Bittensor, where $$R_{init} = 5$$ for all assets:
 ```math
 \begin{aligned}
 & mar = return\% / max( risk\%,\ \frac {\ R_{init}\ } {\ \sqrt { days\ }\ } )

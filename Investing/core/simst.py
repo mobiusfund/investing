@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.6.1
+simst - Sim Strat, version 1.8.0
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -33,8 +33,10 @@ Environment variables:
         SIMST_CLIP_DEFAULT
         SIMST_RISK_INIT_DTAO
         SIMST_RISK_INIT_STK
+        SIMST_RISK_INIT_A9
         SIMST_WIN_SIZE_DTAO
         SIMST_WIN_SIZE_STK
+        SIMST_WIN_SIZE_A9
 
 Notes: The strategies csv file has 6 effective columns: uid, date, block,
 init, fund, strat. Other columns are allowed but ignored. A strategy is
@@ -433,27 +435,32 @@ def plfinal(self):
     delattr(self, '_hl')
 
 def pl2sc(self):
+    if not len(self.pl): return
     pl, sc = self.pl, self.sc
     pl = pl.sort_values([*pl.columns[:3]])
-    for gg, dd in pl.groupby([*pl.columns[:2]]) if len(pl) else []:
+    for gg, dd in pl.groupby([*pl.columns[:2]]):
         date, a, days = dd['date'].iat[-1], dd['asset'].iat[0], len(dd)
         dd = dd[-self.win_size[a]:].reset_index(drop=True)
         init = dd['swap_open'].iat[0]
-        dd['pnl'] = dd['swap_close'].diff()
-        dd['pnl%'] = dd['pnl'] / dd['swap_close'].shift() * 100
-        dd['pnl'].iat[0] = dd['swap_close'].iat[0] - init
-        dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
+        if 'pnl' not in dd:
+            dd['pnl'] = dd['swap_close'].diff()
+            dd['pnl%'] = dd['pnl'] / dd['swap_close'].shift() * 100
+            dd['pnl'].iat[0] = dd['swap_close'].iat[0] - init
+            dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
+        if 'return%' in dd: gain = dd['return%'].iat[-1] - dd['return%'].iat[0]
+        else: gain = 0
 
         ii = dd[dd['pnl%'] > 0].sort_values('pnl%')[::-1][:self.clip_outliers + 1].index
         if len(ii) == 0: clip = 0
         elif len(ii) == self.clip_outliers + 1: clip = dd['pnl%'][ii[-1]]
         else: clip = min(self.clip_default, dd['pnl%'][ii[-1]])
-        dd.loc[ii, 'pnl%'] = clip
         for i in ii:
+            if gain: gain -= dd['pnl%'][i] - clip
             open = dd['swap_close'][i-1] if i else init
             dd.loc[i:, 'swap_close'] -= dd['swap_close'][i] - open * (1 + clip / 100)
             dd.loc[i, 'pnl'] = open * clip / 100
-        sc.loc[len(sc)] = *gg, date, a, days, *score(dd, self.risk_init[a])[1:]
+            dd.loc[i, 'pnl%'] = clip
+        sc.loc[len(sc)] = *gg, date, a, days, *score(dd, self.risk_init[a], gain)[1:]
     #sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
     sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= (sc['days'] / DAYS_FINAL) ** DAYS_DELAY
     self.sc = sc.sort_values(['score', 'return%'], ascending=False)
@@ -492,7 +499,7 @@ def drawdown(pnl):
         down = max(down, peak - gain[i])
     return down
 
-def score(dd, risk_init=1):
+def score(dd, risk_init=1, gain=0):
     days = len(dd)
     prob = len(dd[dd['pnl%'] > 0]) / days
     pavg = dd['pnl%'][dd['pnl%'] > 0].mean()
@@ -500,7 +507,7 @@ def score(dd, risk_init=1):
     value = dd['value_close'].iat[-1]
     swap = dd['swap_close'].iat[-1]
     init = dd['swap_open'].iat[0]
-    gain = max(swap - init, -init) / init * 100
+    gain = gain or max(swap - init, -init) / init * 100
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apr = ((1 + daily / 100) ** 365 - 1) * 100
@@ -594,11 +601,13 @@ SimSt.pnl_dir = os.getenv('SIMST_PNL_DIR', PNL_DIR)
 SimSt.vali_take = float(os.getenv('SIMST_VALI_TAKE', VALI_TAKE))
 SimSt.clip_outliers = int(os.getenv('SIMST_CLIP_OUTLIERS', CLIP_OUTLIERS))
 SimSt.clip_default = int(os.getenv('SIMST_CLIP_DEFAULT', CLIP_DEFAULT))
-SimSt.risk_init = []
-SimSt.risk_init += [float(os.getenv('SIMST_RISK_INIT_DTAO', RISK_INIT_DTAO))]
-SimSt.risk_init += [float(os.getenv('SIMST_RISK_INIT_STK', RISK_INIT_STK))]
-SimSt.win_size = []
-SimSt.win_size += [int(os.getenv('SIMST_WIN_SIZE_DTAO', WIN_SIZE_DTAO))]
-SimSt.win_size += [int(os.getenv('SIMST_WIN_SIZE_STK', WIN_SIZE_STK))]
+SimSt.risk_init = {}
+SimSt.risk_init[0] = float(os.getenv('SIMST_RISK_INIT_DTAO', RISK_INIT_DTAO))
+SimSt.risk_init[1] = float(os.getenv('SIMST_RISK_INIT_STK', RISK_INIT_STK))
+SimSt.risk_init[9] = float(os.getenv('SIMST_RISK_INIT_A9', RISK_INIT_A9))
+SimSt.win_size = {}
+SimSt.win_size[0] = int(os.getenv('SIMST_WIN_SIZE_DTAO', WIN_SIZE_DTAO))
+SimSt.win_size[1] = int(os.getenv('SIMST_WIN_SIZE_STK', WIN_SIZE_STK))
+SimSt.win_size[9] = int(os.getenv('SIMST_WIN_SIZE_A9', WIN_SIZE_A9))
 
 if __name__ == "__main__": main()

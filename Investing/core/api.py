@@ -22,14 +22,24 @@ def rev(ss58):
 
 def pnl():
     bt.logging.info('Fetching PnL data...')
-    pl = pd.read_csv(f'{cd}/db/pnl.col')
+    pl = []
+    df = pd.read_csv(f'{cd}/db/pnl.col')
     try: r = requests.get(f'{API_ROOT}/pnl')
     except Exception as e:
         bt.logging.error(e)
         return pl
     if r.status_code == 200:
-        pl = pd.DataFrame(json.loads(r.json()), None, pl.columns)
+        df = pd.DataFrame(json.loads(r.json()), None, df.columns)
+        pl += [df]
     btlog(r)
+    try: r = requests.get(f'{API_ROOT}/pnl9')
+    except Exception as e:
+        bt.logging.error(e)
+        return pl
+    if r.status_code == 200:
+        df = json.loads(r.json())
+        df = pd.DataFrame(df[1:], None, df[0])
+        pl += [df]
     return pl
 
 def days():

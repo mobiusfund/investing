@@ -74,14 +74,16 @@ def dedupe(ab):
 
 def score(pl, ab, da, ra, n=256):
     sim = SimSt()
-    sim.pl = pl
-    sim.pl2sc()
+    for i in range(len(pl)):
+        sim.pl = pl[i]
+        sim.pl2sc()
     sc = sim.sc
 
     oc = pd.DataFrame(columns=['uid', 'c'])
-    for uid, dd in pl.groupby(pl.columns[0]):
+    for uid, dd in pl[0].groupby(pl[0].columns[0]):
         oc.loc[len(oc)] = uid, int(dd['swap_close'].iat[-1] >= dd['swap_open'].iat[0])
     sc = sc.join(oc.set_index('uid'), 'uid')
+    sc['c'] = sc['c'].fillna(1).astype(int)
     sc['score'] *= sc['c']
     sc.insert(7, 'c', sc.pop('c'))
 
@@ -106,9 +108,10 @@ def score(pl, ab, da, ra, n=256):
     else: ua = {}
 
     scz = sc['score'].sum()
-    for a in range(len(ra)):
+    for i in range(len(ra)):
+        a = i if i < len(ra) - 1 else 9
         sca = sc[sc['a'] == a]['score'].sum()
-        if sca: sc.loc[sc['a'] == a, 'score'] *= ra[a] * scz / sca
+        if sca: sc.loc[sc['a'] == a, 'score'] *= ra[i] * scz / sca
 
     score = [sc[sc['uid'] == i]['score'].iat[0] if i in sc['uid'].values else 0 for i in range(n)]
     su = sum(ra)
