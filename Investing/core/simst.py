@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.8.1
+simst - Sim Strat, version 1.8.2
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -458,9 +458,10 @@ def pl2sc(self):
             dd.loc[i:, 'swap_close'] -= dd['swap_close'][i] - open * (1 + clip / 100)
             dd.loc[i, 'pnl'] = open * clip / 100
             dd.loc[i, 'pnl%'] = clip
-        sc.loc[len(sc)] = *gg, date, a, days, *score(dd, self.risk_init[a])[1:]
-    #sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
-    sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= (sc['days'] / DAYS_FINAL) ** DAYS_DELAY
+
+        sco = [*score(dd, self.risk_init[a])]
+        sco[3] *= min(1, (days / DAYS_FINAL) ** DAYS_DELAY)
+        sc.loc[len(sc)] = *gg, date, a, days, *sco[1:]
     self.sc = sc.sort_values(['score', 'return%'], ascending=False)
     self.scappend(sc)
 
