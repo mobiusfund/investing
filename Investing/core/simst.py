@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.8.2
+simst - Sim Strat, version 1.8.3
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -506,8 +506,10 @@ def score(dd, risk_init=1):
     value = dd['value_close'].iat[-1]
     swap = dd['swap_close'].iat[-1]
     init = dd['swap_open'].iat[0]
-    gain = dd['return%'].iat[-1] - dd['return%'].iat[0] if 'return%' in dd \
-    else max(swap - init, -init) / init * 100
+    if 'return%' in dd:
+        if len(dd) > 1: gain = dd['return%'].iat[-1] - dd['return%'].iat[0]
+        else: gain = dd['return%'].iat[0]
+    else: gain = max(swap - init, -init) / init * 100
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apr = ((1 + daily / 100) ** 365 - 1) * 100
