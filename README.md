@@ -86,7 +86,7 @@ pm2 start neurons/validator.py \
 
 ## Mining
 
-MetaTrader miners do not submit strategies. Instead, they trade normally through their linked MetaTrader accounts. Both live and demo accounts can be linked via the [KYM app](https://kym.investing88.ai).
+MetaTrader miners do not submit strategies. Instead, they trade normally through their linked MetaTrader accounts. Both live and demo accounts can be linked via the [KYM app](https://kym.investing88.ai). Transaction records will be automatically retrieved to calculate miner scores. To deliver an effective signals service at scale, currently supported [assets](https://api.investing88.ai/assets) are highly liquid. Other assets will appear in public records but will be excluded from score calculations.
 
 When a strategy is filed under the `Investing/strat/` directory, it will be automatically submitted by the miner. Please see [README](https://github.com/mobiusfund/investing/tree/main/Investing/strat) for further info.
 

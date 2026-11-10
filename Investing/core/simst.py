@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.8.0
+simst - Sim Strat, version 1.8.1
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -447,20 +447,18 @@ def pl2sc(self):
             dd['pnl%'] = dd['pnl'] / dd['swap_close'].shift() * 100
             dd['pnl'].iat[0] = dd['swap_close'].iat[0] - init
             dd['pnl%'].iat[0] = dd['pnl'].iat[0] / init * 100
-        if 'return%' in dd: gain = dd['return%'].iat[-1] - dd['return%'].iat[0]
-        else: gain = 0
 
         ii = dd[dd['pnl%'] > 0].sort_values('pnl%')[::-1][:self.clip_outliers + 1].index
         if len(ii) == 0: clip = 0
         elif len(ii) == self.clip_outliers + 1: clip = dd['pnl%'][ii[-1]]
         else: clip = min(self.clip_default, dd['pnl%'][ii[-1]])
         for i in ii:
-            if gain: gain -= dd['pnl%'][i] - clip
+            if 'return%' in dd: dd.loc[i:, 'return%'] -= dd['pnl%'][i] - clip
             open = dd['swap_close'][i-1] if i else init
             dd.loc[i:, 'swap_close'] -= dd['swap_close'][i] - open * (1 + clip / 100)
             dd.loc[i, 'pnl'] = open * clip / 100
             dd.loc[i, 'pnl%'] = clip
-        sc.loc[len(sc)] = *gg, date, a, days, *score(dd, self.risk_init[a], gain)[1:]
+        sc.loc[len(sc)] = *gg, date, a, days, *score(dd, self.risk_init[a])[1:]
     #sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= sc['days'] / (sc['days'] + DAYS_INIT)
     sc.loc[sc['days'] < DAYS_FINAL, 'score'] *= (sc['days'] / DAYS_FINAL) ** DAYS_DELAY
     self.sc = sc.sort_values(['score', 'return%'], ascending=False)
@@ -499,20 +497,22 @@ def drawdown(pnl):
         down = max(down, peak - gain[i])
     return down
 
-def score(dd, risk_init=1, gain=0):
+def score(dd, risk_init=1):
     days = len(dd)
-    prob = len(dd[dd['pnl%'] > 0]) / days
+    prob = len(dd[dd['pnl%'] > 0]) / (len(dd[dd['pnl%'] != 0]) or days)
     pavg = dd['pnl%'][dd['pnl%'] > 0].mean()
     lavg = dd['pnl%'][dd['pnl%'] < 0].mean() * -1
     value = dd['value_close'].iat[-1]
     swap = dd['swap_close'].iat[-1]
     init = dd['swap_open'].iat[0]
-    gain = gain or max(swap - init, -init) / init * 100
+    gain = dd['return%'].iat[-1] - dd['return%'].iat[0] if 'return%' in dd \
+    else max(swap - init, -init) / init * 100
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apr = ((1 + daily / 100) ** 365 - 1) * 100
     mar = gain / max(risk, risk_init / days ** 0.5)
-    lsr = dd['pnl'].sum() / (dd['pnl'].abs().sum() or 1e18)
+    pnl = 'pnl%' if 'return%' in dd else 'pnl'
+    lsr = dd[pnl].sum() / (dd[pnl].abs().sum() or 1e18)
     odds = 50 + kelly(prob, pavg / lavg) / 2 * 100
     if odds <= 0: odds = 0
     if np.isnan(odds): odds = prob * 100
