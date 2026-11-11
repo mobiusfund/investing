@@ -1,5 +1,5 @@
 info = '''
-simst - Sim Strat, version 1.8.3
+simst - Sim Strat, version 1.8.4
 Copyright © Mobius Fund
 Author: Jake Fan, jake@mobius.fund
 License: The MIT License
@@ -459,7 +459,11 @@ def pl2sc(self):
             dd.loc[i, 'pnl'] = open * clip / 100
             dd.loc[i, 'pnl%'] = clip
 
-        sco = [*score(dd, self.risk_init[a])]
+        if 'return%' in dd:
+            if len(dd) < days: gain = dd['return%'].iat[-1] - dd['return%'].iat[0]
+            else: gain = dd['return%'].iat[-1]
+        else: gain = 0
+        sco = [*score(dd, self.risk_init[a], gain)]
         sco[3] *= min(1, (days / DAYS_FINAL) ** DAYS_DELAY)
         sc.loc[len(sc)] = *gg, date, a, days, *sco[1:]
     self.sc = sc.sort_values(['score', 'return%'], ascending=False)
@@ -498,7 +502,7 @@ def drawdown(pnl):
         down = max(down, peak - gain[i])
     return down
 
-def score(dd, risk_init=1):
+def score(dd, risk_init=1, gain=0):
     days = len(dd)
     prob = len(dd[dd['pnl%'] > 0]) / (len(dd[dd['pnl%'] != 0]) or days)
     pavg = dd['pnl%'][dd['pnl%'] > 0].mean()
@@ -506,10 +510,7 @@ def score(dd, risk_init=1):
     value = dd['value_close'].iat[-1]
     swap = dd['swap_close'].iat[-1]
     init = dd['swap_open'].iat[0]
-    if 'return%' in dd:
-        if len(dd) > 1: gain = dd['return%'].iat[-1] - dd['return%'].iat[0]
-        else: gain = dd['return%'].iat[0]
-    else: gain = max(swap - init, -init) / init * 100
+    gain = gain if 'return%' in dd else max(swap - init, -init) / init * 100
     risk = drawdown(dd['pnl%'])
     daily = ((1 + gain / 100) ** (1 / days) - 1) * 100
     apr = ((1 + daily / 100) ** 365 - 1) * 100
